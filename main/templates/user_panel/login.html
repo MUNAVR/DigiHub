@@ -30,7 +30,7 @@
             </div>
             {% endif %}
             <button>login</button>
-              <a href="{% provider_login_url "google" %}" class="btn w-100 btn-light font-sm">
+              {% comment %} <a href="{% provider_login_url "google" %}" class="btn w-100 btn-light font-sm">
                 <svg aria-hidden="true" class="icon-svg" width="20" height="20" viewBox="0 0 20 20">
                         <!-- Google logo SVG paths -->
                 <path fill="#4285F4" d="M16.51 8H8.98v3h4.3c-.18 1-.74 1.48-1.6 2.04v2.01h2.6a7.8 7.8 0 002.38-5.88c0-.57-.05-.66-.15-1.18z"></path>
@@ -38,8 +38,9 @@
                 <path fill="#FBBC05" d="M4.5 10.52a4.8 4.8 0 010-3.04V5.41H1.83a8 8 0 000 7.18l2.67-2.07z"></path>
                     <path fill="#EA4335" d="M8.98 4.18c1.17 0 2.23.4 3.06 1.2l2.3-2.3A8 8 0 001.83 5.4L4.5 7.49a4.77 4.77 0 014.48-3.3z"></path>
                 </svg> Sign in using Google
-              </a>
+              </a> {% endcomment %}
             <div> 
+            <p class="message">Not registered? <a href="forgot_pass">Forgot Password</a></p>
             <p class="message">Not registered? <a href="sent_otp">Create an account</a></p>
             <p class="message">Not registered? <a href="admin_login">Are you Admin</a></p>
           </form>

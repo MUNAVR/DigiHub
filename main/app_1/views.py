@@ -107,6 +107,37 @@ def login(request):
     return render(request, 'user_panel/login.html')
 
 
+
+def forgot_pass(request):
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        number = request.POST.get('number')
+        password1 = request.POST.get('new_pass1')
+        password2 = request.POST.get('new_pass2')
+        
+        try:
+            user = Customers.objects.get(email=email)
+            contact = user.phone
+            print(number,contact)
+            if contact == number:
+                messages.error(request, "Number does not match")
+                return redirect('user:forgot_pass')
+            
+            if password1 != password2:
+                messages.error(request, "New passwords do not match")
+                return redirect('user:forgot_pass')
+            else:
+                user.password=password1
+                user.save()
+                messages.success(request, "Password changed successfully")
+                return redirect('user:login')
+        except Customers.DoesNotExist:
+            messages.error(request, "User does not exist")
+            return redirect('user:forgot_pass')
+    
+    return render(request, "user_panel/forgot_panel.html")
+
+
 def logout(request):
     if 'email' in request.session:
         request.session.flush()
@@ -295,6 +326,7 @@ def add_address2(request):
 
 
 def delete_address2(request):
+
     if 'email' not in request.session:
         return redirect('user:login')
 
@@ -312,3 +344,46 @@ def delete_address2(request):
             pass  # No address to delete
 
     return redirect('user:user_profile')
+
+
+from django.contrib.auth.hashers import check_password
+
+def change_pass(request):
+
+    if request.method == 'POST':
+        old_pass = request.POST['old_pass']
+        new_pass1 = request.POST['new_pass1']
+        new_pass2 = request.POST['new_pass2']
+
+        current_email = request.session.get('email')
+        if not current_email:
+            return redirect('user:login')
+
+        user = Customers.objects.get(email=current_email)
+
+        # Retrieve the user's password from the database
+        user_password = user.password
+
+        # Check if the old password matches the password in the database
+        if old_pass != user_password:
+            messages.error(request, 'Incorrect old password')
+            return redirect('user:change_pass')
+        
+        print("evide ethiyo")
+        # Check if the new passwords match
+        if new_pass1 != new_pass2:
+            messages.error(request, 'New passwords do not match')
+            return redirect('user:change_pass')
+
+        # Update the user's password
+        user.password=new_pass1
+        user.save()
+
+        messages.success(request, 'Password changed successfully')
+        return redirect('user:user_profile')
+    else:
+        return render(request, "user_panel/change_password.html")
+
+
+
+

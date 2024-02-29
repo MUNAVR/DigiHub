@@ -6,7 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 
 
-# Create your views here.
+# Create your views here.       
 
 def shop_cart(request):
     if 'email' not in request.session:
@@ -31,12 +31,10 @@ def shop_cart(request):
 def add_cart(request, variant_id):
     # Check if 'email' key exists in the session
     if 'email' not in request.session:
-        return redirect('user:login')  # Redirect to login page if not logged in
+        return redirect('user:login') 
 
-    # Retrieve user information from session
+    
     email = request.session['email']
-
-    # Get user object based on email
     user = Customers.objects.get(email=email)
 
     # Get product variant object based on variant_id
@@ -49,10 +47,10 @@ def add_cart(request, variant_id):
     if not created:
         cart_item.quantity += 1
         cart_item.save()
-
+    
     # Redirect to the cart page after adding the item
     return redirect('user:index')
-# Assuming 'cart' is the name of your cart page
+
 
 
 def delete_cart_item(request, cart_item_id):
@@ -103,5 +101,6 @@ def update_cart_item(request):
 
 
 
-
+def checkout(request):
+    return render(request,"user_panel/checkout.html")
 

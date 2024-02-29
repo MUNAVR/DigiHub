@@ -214,9 +214,9 @@ def variant_add(request):
             sale_price = float(sale_price)
         except ValueError:
             error_message = 'Sale price must be a valid number.'
-        if not stock.isdigit():
-            error_message = 'Stock must be a valid integer.'
-        elif float(max_price) > 1.5 * float(sale_price):  # Adjust threshold as needed
+        # if not stock.isdigit():
+        #     error_message = 'Stock must be a valid integer.'
+        if  float(max_price) > 1.5 * float(sale_price):  # Adjust threshold as needed
             error_message = 'Max price should not be significantly higher than sale price.'
         elif int(stock) <= 0:
             error_message = 'Stock must be greater than 0.'

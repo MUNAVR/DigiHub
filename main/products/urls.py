@@ -19,6 +19,7 @@ urlpatterns =[
     path('variant_edit/<id>',views.variant_edit,name="variant_edit"),
 
     # user_side
+    
 
     
 ]
