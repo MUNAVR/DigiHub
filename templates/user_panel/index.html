@@ -35,17 +35,6 @@
                             </ul>
                         </div>
                     </div>
-                    <!-- <div class="col-xl-6 col-lg-4">
-                        <div class="text-center">
-                            <div id="news-flash" class="d-inline-block">
-                                <ul>
-                                    <li>Get great devices up to 50% off <a href="shop-grid-right.html">View details</a></li>
-                                    <li>Supper Value Deals - Save more with coupons</li>
-                                    <li>Trendy 25silver jewelry, save up 35% off today <a href="shop-grid-right.html">Shop now</a></li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div> -->
                     <div class="col-xl-3 col-lg-4">
                         <div class="header-info header-info-right">
                             <ul>
@@ -61,16 +50,12 @@
             <div class="container">
                 <div class="header-wrap">
                     <div class="logo logo-width-1">
-                        <a href="index.html"><img src="{% static 'imgs/logo1.png' %}" alt="logo"></a>
+                        <a href="user:index"><img src="{% static 'imgs\page\smartphone-logo-communication-electronics-vector-modern-phone-design-company-brand-symbol_638875-2356.avif' %}" alt="logo"></a>
                     </div>
                     <div class="header-right">
                         <div class="search-style-2">
                             <form action="#">
-                                <select class="select-active">
-                                    <option>All Brands</option>
-                                    <option>Vivo</option>
-                                </select>
-                                <input type="text" placeholder="Search for items...">
+                                <input type="text" placeholder="Search for Mobiles...">
                             </form>
                         </div>
                         <div class="header-action-2">
@@ -96,40 +81,11 @@
                 </div>
             </div>
         </div>
-        <div class="header-bottom header-bottom-bg-color sticky-bar">
-            <div class="container">
-                <div class="header-wrap header-space-between position-relative">
-                    <div class="logo logo-width-1 d-block d-lg-none">
-                        <a href="index.html"><img src="{% static 'imgs/theme/logo.svg' %}" alt="logo"></a>
-                    </div>
-                    <div class="header-nav d-none d-lg-flex">
-                        <div class="main-categori-wrap d-none d-lg-block">
-                            <a class="categori-button-active" href="#">
-                                <span class="fi-rs-apps"></span> Browse Categories
-                            </a>
-                        </div>
-                        <div class="main-menu main-menu-padding-1 main-menu-lh-2 d-none d-lg-block">
-                            <nav>
-                                <ul>
-                                    <li><a class="active" href="#">Home <i class="fi-rs-angle-down"></i></a>
-                                    </li>
-                                    <li>
-                                        <a href="#">About</a>
-                                    </li>
-                                    <li>
-                                        <a href="#">Contact</a>
-                                    </li>
-                                </ul>
-                            </nav>
-                        </div>
-                    </div>
-                    <div class="hotline d-none d-lg-block">
-                        <p><i class="fi-rs-headset"></i><span>Hotline</span>9562978458</p>
-                    </div>
-                </div>
-            </div>
-        </div>
+        
     </header>
+    <div>
+        <img src="{% static 'imgs\page\67500b5f-b206-41f4-b057-ac57f119c168.__CR0,0,1464,600_PT0_SX1464_V1___.jpg' %}" style="height: 600px;" width="100%">
+    </div>
     <main class="main">
             <section class="mt-50 mb-50">
                 <div class="container">
@@ -137,7 +93,7 @@
                         <div class="col-lg-9">
                             <div class="shop-product-fillter style-2">
                                 <div class="totall-product">
-                                    <p> We have <strong class="text-brand">10</strong> items for you!</p>
+                                    <p> We have <strong class="text-brand">{{count}}</strong> Mobile for you!</p>
                                 </div>
                                 <div class="sort-by-product-area">
                                     <div class="sort-by-cover">
@@ -153,7 +109,6 @@
                                             <select name="sort_by" id="sort">
                                                 <option value="low_to_high">Price: Low to High</option>
                                                 <option value="high_to_low">Price: High to Low</option>
-                                                <option value="new_arrivals">New Arrivals</option>
                                                 <option value="a_to_z">A-Z</option>
                                                 <option value="z_to_a">Z-A</option>
                                             </select>
@@ -161,15 +116,14 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="product-list mb-50">
+                            <div class="product-list mb-50" id="product-list">
                                     {% for variant in variant %}
-                                    {% for attribute_value in variant.attributes.all %}
                                 <div class="product-cart-wrap">
                                     <div class="product-img-action-wrap">
                                         <div class="product-img product-img-zoom">
                                             <a href="product_details/{{variant.id}}">
                                                 <img class="default-img"  src="{{ variant.thumbnail_image.url}}" alt="">
-                                                <img class="hover-img"  src="{{ variant.thumbnail_image.url}}" alt="">
+                                                <img class="hover-img"  src="{{ variant.thumbnail_image1.url}}" alt="">
                                             </a>
                                         </div>
                                         <div class="product-action-1">
@@ -203,7 +157,6 @@
                                     </div>
                                 </div>
                                     {% endfor %}
-                                    {% endfor %}
                             </div>
                             <!--pagination-->
                         </div>
@@ -214,48 +167,53 @@
                                     <h5 class="widget-title mb-10">New products</h5>
                                     <div class="bt-1 border-color-1"></div>
                                 </div>
+                                {% for variant in new_variant %}
                                 <div class="single-post clearfix">
+                                    
                                     <div class="image">
-                                        <img src="assets/imgs/shop/thumbnail-3.jpg" alt="#">
+                                        <img src="{{ variant.thumbnail_image.url}}" alt="#">
                                     </div>
                                     <div class="content pt-10">
-                                        <h5><a href="shop-product-detail.html">Chen Cardigan</a></h5>
-                                        <p class="price mb-0 mt-5">$99.50</p>
+                                        <h5><a href="shop-product-detail.html">{{variant.product.product_name}}</a></h5>
+                                        <p class="price mb-0 mt-5"> ₹ {{variant.sale_price}}</p>
                                         <div class="product-rate">
                                             <div class="product-rating" style="width:90%"></div>
                                         </div>
                                     </div>
+                                    
                                 </div>
-                                <div class="single-post clearfix">
-                                    <div class="image">
-                                        <img src="assets/imgs/shop/thumbnail-4.jpg" alt="#">
-                                    </div>
-                                    <div class="content pt-10">
-                                        <h6><a href="shop-product-detail.html">Chen Sweater</a></h6>
-                                        <p class="price mb-0 mt-5">$89.50</p>
-                                        <div class="product-rate">
-                                            <div class="product-rating" style="width:80%"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="single-post clearfix">
-                                    <div class="image">
-                                        <img src="assets/imgs/shop/thumbnail-5.jpg" alt="#">
-                                    </div>
-                                    <div class="content pt-10">
-                                        <h6><a href="shop-product-detail.html">Colorful Jacket</a></h6>
-                                        <p class="price mb-0 mt-5">$25</p>
-                                        <div class="product-rate">
-                                            <div class="product-rating" style="width:60%"></div>
-                                        </div>
-                                    </div>
-                                </div>
+                                {% endfor %}
                             </div>
                         </div>
                     </div>
                 </div>
             </section>
         </main>
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script>
+            $(document).ready(function() {
+                $('#sort').change(function() {
+                    var sortBy = $(this).val();
+                    $.ajax({
+                        type: 'GET',
+                        url: "{% url 'user:sort_products' %}",
+                        data: {
+                            sort_by: sortBy
+                        },
+                        success: function(response) {
+                            $('#product-list').html(response.html); // Update only the product list section
+                        },
+                        error: function(xhr, textStatus, errorThrown) {
+                            console.error('Error:', errorThrown);
+                        }
+                    });
+                });
+            });
+            
+            
+        </script>
+
+
         <footer class="main">
         <section class="newsletter p-30 text-white wow fadeIn animated">
             <div class="container">
@@ -391,40 +349,13 @@
     <!-- Template  JS -->
     <script src="{% static 'js/main.js'%}"></script>
     <script src="{% static 'js/shop.js'%}"></script>
-    <script>
-    $(document).ready(function() {
-        $('.sort-by-dropdown-wrap').on('click', function() {
-            $('.sort-by-dropdown').toggleClass('active');
-        });
-
-        $('.sort-by-dropdown ul li a').on('click', function(e) {
-            e.preventDefault();
-            var sortOption = $(this).attr('data-sort');
-            updateProductList(sortOption);
-        });
-    });
-
-    function updateProductList(sortOption) {
-        $.ajax({
-            type: 'GET',
-            url: '/your-django-view-url/',
-            data: {
-                'sort_by': sortOption
-            },
-            success: function(data) {
-                var htmlContent = data.html;
-                $('.product-list').html(htmlContent);
-            },
-            error: function(xhr, status, error) {
-                console.error(error);
-            }
-        });
-    }
-    </script>
+    
 
 </body>
 
 
 <!-- Mirrored from wp.alithemes.com/html/evara/evara-frontend/index.html by HTTrack Website Copier/3.x [XR&CO'2014], Sun, 01 Aug 2021 15:25:49 GMT -->
 </html>
+
+
 

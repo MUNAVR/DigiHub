@@ -5345,12 +5345,13 @@ h6.post-title {
 }
 
 .logo.logo-width-1 {
-  margin-right: 123px;
+  margin-right: 100px;
 }
 
 .logo.logo-width-1 a img {
   width: 120px;
-  min-width: 120px;
+  min-width: 100px;
+  height: 6px;
 }
 
 .search-style-1 form {

@@ -12,6 +12,11 @@
 <body>
 	<div class="wrapper">
 		<h2>Registration</h2>
+		{% for message in messages %}
+            <div class="alert alert-{{ message.tags }}" role="alert">
+                {{ message }}
+            </div>
+        {% endfor %}
 		<form  id="form" method="POST">
 			{%csrf_token%}
 		  <div class="input-box">
@@ -33,7 +38,7 @@
 			<input type="password" placeholder="Confirm password" id="password" name="pass2" required>
 		  </div>
 		  <div class="input-box button">
-			<input type="submit" value="Register Now">
+			<input type="submit" value="Send OTP">
 		  </div>
 		  <div class="text">
 			<h3>Already have an account? <a href="{% url 'user:login'%}">Login now</a></h3>

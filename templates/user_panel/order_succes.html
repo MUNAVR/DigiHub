@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Success</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        p {
+            color: #666;
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        .order-details {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        .order-details h2 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .order-details p {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+        .btn {
+            display: inline-block;
+            background-color: #007bff;
+            color: #fff;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+        }
+        .success-message {
+            text-align: center;
+            color: #28a745;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Order Success!</h1>
+        <p class="success-message">Your order has been placed successfully. Thank you for shopping with us!</p>
+        
+        <div class="order-details">
+            <h2>Order Details</h2>
+            <p><strong>Order Number:</strong> {{ order.id }}</p>
+            <p><strong>Order Date:</strong> {{ order.order_date }}</p>
+            <p><strong>Total Amount:</strong> {{ order.total_amount }}</p>
+            <p><strong>Shipping Address:</strong></p>
+            <p>{{ order.shipping_address }}</p>
+        </div>
+
+        <a href="{% url 'user.index' %}" class="btn">Continue Shopping</a>
+    </div>
+</body>
+</html>

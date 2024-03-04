@@ -18,16 +18,17 @@
     <div class="login-page">
         <div class="form">
           <h2>Login Now</h2>
+          {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}" role="alert">
+                {{ message }}
+            </div>
+            {% endfor %}
           <form class="login-form" id="form" method="POST">
              {%csrf_token%}
             <input type="email" name="email" id="email" placeholder="Email" >
             <input type="password" name="pass" id="password" placeholder="Password">
-            {% if messages %}
-            <div class="alert alert-danger">
-                {% for message in messages %}
-                {{ message }}
-                {% endfor %}
-            </div>
+            {% if error_message %}
+            <div class="alert alert-danger">{{ error_message }}</div>
             {% endif %}
             <button>login</button>
               {% comment %} <a href="{% provider_login_url "google" %}" class="btn w-100 btn-light font-sm">
@@ -41,7 +42,7 @@
               </a> {% endcomment %}
             <div> 
             <p class="message">Not registered? <a href="forgot_pass">Forgot Password</a></p>
-            <p class="message">Not registered? <a href="sent_otp">Create an account</a></p>
+            <p class="message">Not registered? <a href="signup">Create an account</a></p>
             <p class="message">Not registered? <a href="admin_login">Are you Admin</a></p>
           </form>
 

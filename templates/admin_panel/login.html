@@ -22,15 +22,10 @@
             <input type="text" name="username" id="email" placeholder="username"/>
             <input type="password" name="password" id="password" placeholder="password"/>
             <button>login</button>
-            {% if messages %}
-            <div class="alert alert-danger">
-                {% for message in messages %}
-                {{ message }}
-                {% endfor %}
-            </div>
+            {% if error_message %}
+            <div class="alert alert-danger">{{ error_message }}</div>
             {% endif %}
             <div> 
-            <p class="message">Not registered? <a href="signup">Create an account</a></p>
             <p class="message">Not registered? <a href="login">Existing User/a></p>
           </form>
         </div>

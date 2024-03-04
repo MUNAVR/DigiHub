@@ -196,39 +196,39 @@
                     <h2 class="content-title card-title">variant List</h2>
                     <p>Lorem ipsum dolor sit amet.</p>
                 </div>
-                <div>
-                    <a href="#" class="btn btn-light rounded font-md">Export</a>
-                    <a href="#" class="btn btn-light rounded  font-md">Import</a>
-                    <a href="#" class="btn btn-primary btn-sm rounded">Create new</a>
-                </div>
             </div>
+            {% if error_message %}
+            <div class="alert alert-danger">{{ error_message }}</div>
+            {% endif %}
+
+
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}" role="alert">
+                {{ message }}
+            </div>
+            {% endfor %}
             <div class="card mb-4">
                 <header class="card-header">
                     <div class="row align-items-center">
-                        <div class="col col-check flex-grow-0">
-                            <div class="form-check ms-2">
-                                <input class="form-check-input" type="checkbox" value="">
-                            </div>
-                        </div>
-                        <div class="col-md-3 col-12 me-auto mb-md-0 mb-3">
+                        {% comment %} <div class="col-md-3 col-12 me-auto mb-md-0 mb-3">
                             <select class="form-select">
                                 <option selected>All category</option>
                                 <option>Electronics</option>
                                 <option>Clothes</option>
                                 <option>Automobile</option>
                             </select>
-                        </div>
-                        <div class="col-md-2 col-6">
+                        </div> {% endcomment %}
+                        {% comment %} <div class="col-md-2 col-6">
                             <input type="date" value="02.05.2021" class="form-control">
-                        </div>
-                        <div class="col-md-2 col-6">
+                        </div> {% endcomment %}
+                        {% comment %} <div class="col-md-2 col-6">
                             <select class="form-select">
                                 <option selected>Status</option>
                                 <option>Active</option>
                                 <option>Disabled</option>
                                 <option>Show all</option>
                             </select>
-                        </div>
+                        </div> {% endcomment %}
                     </div>
                 </header> <!-- card-header end// -->
                 <div class="card-body">
@@ -257,9 +257,9 @@
                                 <a href="variant_edit/{{variant.id}}" class="btn btn-sm font-sm rounded btn-brand">
                                     <i class="material-icons md-edit"></i> Edit
                                 </a>
-                                <a href="variant_delete/{{variant.id}}" class="btn btn-sm font-sm btn-light rounded">
+                                {% comment %} <a href="variant_delete/{{variant.id}}" class="btn btn-sm font-sm btn-light rounded">
                                     <i class="material-icons md-delete_forever"></i> Delete
-                                </a>
+                                </a> {% endcomment %}
                             </div>
                             {% endfor %}
                             {% endfor %}

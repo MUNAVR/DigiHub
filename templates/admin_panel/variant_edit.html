@@ -202,30 +202,22 @@
                             </div> -->
                         </div>
                     </div>
+                    {% if error_message %}
+                    <div class="alert alert-danger">{{ error_message }}</div>
+                    {% endif %}
+
+
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}" role="alert">
+                        {{ message }}
+                    </div>
+                    {% endfor %}
                     <div class="col-lg-6">
                         <div class="card mb-4">
                             <div class="card-header">
                                 <h4>Basic</h4>
                             </div>
                             <div class="card-body">
-                                    <div class="mb-3">
-                                        <label for="product">Product</label>
-                                        <select class="form-control" id="product" name="product">
-                                            <option value="">Select an option</option>
-                                            {% for product in product %}
-                                                <option value="{{ product.id }}">{{ product.product_name }}</option>
-                                            {% endfor %}
-                                        </select>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="product">Variant</label>
-                                        <select class="form-control" id="product" name="variant">
-                                            <option value="">Select an option</option>
-                                            {% for variant in variant %}
-                                                <option value="{{ variant.id }}">{{ variant.attribute_color }},{{ variant.attribute_ram }}</option>
-                                            {% endfor %}
-                                        </select>
-                                    </div>
                                     <div class="row">
                                         <div class="col-lg-4">
                                             <div class="mb-4">
@@ -260,6 +252,20 @@
 <!--                                            <input class="form-control mb-2" value="{{ obj.thumbnail_image.url }}" type="text" readonly>-->
                                             <!-- File input for uploading a new image -->
                                             <input class="form-control" name="image" type="file">
+                                        </div>
+                                        <div class="input-upload"><br>
+                                            <img src="{{ obj.thumbnail_image1.url }}" alt="">
+                                            <!-- Display current image URL -->
+<!--                                            <input class="form-control mb-2" value="{{ obj.thumbnail_image.url }}" type="text" readonly>-->
+                                            <!-- File input for uploading a new image -->
+                                            <input class="form-control" name="image1" type="file">
+                                        </div>
+                                        <div class="input-upload"><br>
+                                            <img src="{{ obj.thumbnail_image2.url }}" alt="">
+                                            <!-- Display current image URL -->
+<!--                                            <input class="form-control mb-2" value="{{ obj.thumbnail_image.url }}" type="text" readonly>-->
+                                            <!-- File input for uploading a new image -->
+                                            <input class="form-control" name="image2" type="file">
                                         </div>
                                     </div>
                                     </div>

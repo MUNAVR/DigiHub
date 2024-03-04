@@ -231,10 +231,22 @@
                                             <option value="{{ brd.id }}">{{ brd.name }}</option>
                                         {% endfor %}
                                     </select>
+                                </div>  
+                                <div class="mb-3">
+                                    <label for="camera" class="form-label">Camera</label>
+                                    <input type="text" class="form-control" id="camera" name="camera" placeholder="Enter camera details (e.g., 12MP)">
                                 </div>
-                                <div class="mb-4">
-                                    <label class="form-label">Product Description</label>
-                                    <textarea placeholder="Type here" class="form-control" name="description" rows="4"></textarea>
+                                <div class="mb-3">
+                                    <label for="display" class="form-label">Display</label>
+                                    <input type="text" class="form-control" id="display" name="display" placeholder="Enter display details (e.g., 6.5 inches)">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="battery" class="form-label">Battery</label>
+                                    <input type="text" class="form-control" id="battery" name="battery" placeholder="Enter battery details (e.g., 4000mAh)">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="processor" class="form-label">Processor</label>
+                                    <input type="text" class="form-control" id="processor" name="processor" placeholder="Enter processor details (e.g., Snapdragon 855)">
                                 </div>
                                 <div class="d-grid">
                                     <button class="btn btn-primary">Create Product</button>

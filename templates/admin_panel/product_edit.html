@@ -212,12 +212,12 @@
                                 <div class="mb-4">
                                     <label for="product_name" class="form-label">Product Name</label>
                                     <span class="form-control">{{ obj.product_name }}</span>
-                                    <input type="text" name="name" value={{obj.product_name}} placeholder="Type here"  class="form-control" id="product_name">
+                                    <input type="text" name="name" value={{obj.product_name}} placeholder="Type here"  class="form-control" id="product_name" required>
                                 </div>
                                 <div class="mb-3">
                                     <label for="product">Category</label>
                                     <span class="form-control">{{ obj.product_category }}</span>
-                                    <select class="form-control" id="product" name="Category">
+                                    <select class="form-control" id="product" name="Category" required>
                                         <option value="">Select an option</option>
                                         {% for cat in category %}
                                             <option value="{{ cat.id }}">{{ cat.name }}</option>
@@ -227,7 +227,7 @@
                                 <div class="mb-3">
                                     <label for="product">Brands</label>
                                     <span class="form-control">{{obj.product_brand}}</span>
-                                    <select class="form-control" id="product" name="brand">
+                                    <select class="form-control" id="product" name="brand" required>
                                         <option value="">Select an option</option>
                                         {% for brd in brand %}
                                             <option value="{{ brd.id }}">{{ brd.name }}</option>
@@ -236,15 +236,30 @@
                                 </div>
                                <div class="mb-4">
                                         <label class="form-label">Active status</label>
-                                        <select name="active" class="form-select" id="active_status">
+                                        <select name="active" class="form-select" id="active_status" required>
                                             <option value="True" {% if obj.is_active %} selected {% endif %}>True</option>
                                             <option value="False" {% if not obj.is_active %} selected {% endif %}>False</option>
                                         </select>
                                 </div>
-                                <div class="mb-4">
-                                    <label class="form-label">Product Description</label>
-                                    <span class="form-control">{{obj.product_description}}</span>
-                                    <textarea placeholder="Type here" class="form-control"  value={{obj.product_description}} name="description" rows="4"></textarea>
+                                <div class="mb-3">
+                                    <label for="camera" class="form-label">Camera</label>
+                                    <span class="form-control">{{obj.camera}}</span>
+                                    <input type="text" class="form-control" id="camera" name="camera" placeholder="Enter camera details (e.g., 12MP)" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="display" class="form-label">Display</label>
+                                    <span class="form-control">{{obj.display}}</span>
+                                    <input type="text" class="form-control" id="display" name="display" placeholder="Enter display details (e.g., 6.5 inches)" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="battery" class="form-label">Battery</label>
+                                    <span class="form-control">{{obj.battery}}</span>
+                                    <input type="text" class="form-control" id="battery" name="battery" placeholder="Enter battery details (e.g., 4000mAh)" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="processor" class="form-label">Processor</label>
+                                    <span class="form-control">{{obj.processor}}</span>
+                                    <input type="text" class="form-control" id="processor" name="processor" placeholder="Enter processor details (e.g., Snapdragon 855)" required>
                                 </div>
                                 <div class="d-grid">
                                     <button class="btn btn-primary">Create Product</button>

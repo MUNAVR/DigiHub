@@ -8,35 +8,77 @@ from django.core.mail import send_mail
 import random
 from products.models import Product_Variant
 from django.contrib.auth.hashers import check_password
-
+from django.core import serializers
+from django.http import JsonResponse
+from django.template.loader import render_to_string
+import re
+from django.shortcuts import render, redirect
+from .models import Customers
+from django.contrib import messages
+from django.core.exceptions import ValidationError
+from django.contrib.auth.hashers import check_password
+from django.urls import reverse
 
 
 def google_oauth_callback(request):
     return redirect("user:index")
+
 def signup(request):
-    if request.method =='POST':
-        fname=request.POST['fname']
-        lname=request.POST['lname']
-        email=request.POST['email']
-        contact=request.POST['mobile']
-        pass1=request.POST['pass1']
-        pass2=request.POST['pass2']
-
-        if pass1 != pass2:
-            return  redirect('signup',{'error':'Password does not match.'})
-        elif Customers.objects.filter(email=email).exists():
-            return redirect('signup',{'error':'Email is already registered.'})
-        else:
-            users=Customers(first_name=fname,last_name=lname,email=email,phone=contact,password=pass1)
-            users.save()
-            return redirect('user:login')
-    else:
-        return render(request,"user_panel/signup.html")
-
-def sent_otp(request):
-    random_num = random.randint(1000, 9999)
     if request.method == 'POST':
-        email=request.POST['email']
+        fname = request.POST.get('fname')
+        lname = request.POST.get('lname')
+        email = request.POST.get('email')
+        contact = request.POST.get('mobile')
+        pass1 = request.POST.get('pass1')
+        pass2 = request.POST.get('pass2')
+
+
+        # Validate first name format
+        if not validate_name(fname):
+            messages.error(request, 'name starts with a capital letter and contains only letters')
+            return redirect('user:signup')
+
+        # Validate last name format
+        if not validate_name(lname):
+            messages.error(request, 'Invalid last name format.')
+            return redirect('user:signup')
+
+        # Check if email is already registered
+        if Customers.objects.filter(email=email).exists():
+            messages.error(request, 'Email is already registered.')
+            return redirect('user:signup')
+
+        try:
+            # Validate email format
+            validate_email(email)
+        except ValidationError:
+            messages.error(request, 'Invalid email format.')
+            return redirect('user:signup')
+        
+        # Validate contact number
+        if not validate_contact(contact):
+            messages.error(request, 'Invalid contact number format.')
+            return redirect('user:signup')
+        
+        # Check if passwords match
+        if pass1 != pass2:
+            messages.error(request, 'Passwords do not match.')
+            return redirect('user:signup')
+
+        
+        # Validate password format
+        if not validate_password(pass1):
+            messages.error(request, 'Password must be at least 6 characters long, including one number, and no spaces.')
+            return redirect('user:signup')
+        
+        # Save user details in session
+        request.session['fname'] = fname
+        request.session['lname'] = lname
+        request.session['email'] = email
+        request.session['contact'] = contact
+        request.session['password'] = pass1
+
+        random_num = random.randint(1000, 9999)
         request.session['OTP_Key'] = random_num
         send_mail(
             "OTP AUTHENTICATING DIGIHUB",
@@ -46,17 +88,63 @@ def sent_otp(request):
             fail_silently=False,
         )
         return redirect('user:verify_otp')
+    else:
+        return render(request, "user_panel/signup.html")
 
-    return render(request,"user_panel/email_send.html")
+def validate_email(email):
+    from django.core.validators import validate_email as django_validate_email
+    from django.core.exceptions import ValidationError
+    try:
+        django_validate_email(email)
+        domain = email.split('@')[1]  # Get the domain part of the email
+        if domain == 'gmail.com':  # Check if the domain is gmail.com
+            return True
+        else:
+            return False
+    except ValidationError:
+        return False
+
+
+def validate_name(name):
+    # Check if name starts with a capital letter and contains only letters
+    return bool(re.match(r'^[A-Z][a-z]*$', name))
+
+def validate_contact(contact):
+    # Check if contact is numeric, not all zeros, and has a length of 10
+    return bool(re.match(r'^[1-9][0-9]{9}$', contact))
+
+def validate_password(password):
+    # Check if password is at least 6 characters long, includes one number, and has no spaces
+    return bool(re.match(r'^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$', password))
+
 
 def verify_otp(request):
-   if request.method=="POST":
-      if str(request.session['OTP_Key']) != str(request.POST['otp']):
-         print(request.session['OTP_Key'],request.POST['otp'])
-      else:
-         messages.success(request, "signup successful!")
-         return redirect('user:signup')
-   return render(request,'user_panel/email_otp.html')
+    if request.method == "POST":
+        if str(request.session.get('OTP_Key')) != str(request.POST.get('otp')):
+            messages.error(request, "Invalid OTP. Please try again.")
+            return redirect('user:verify_otp')
+        else:
+            # OTP verification successful, save user details
+            fname = request.session.get('fname')
+            lname = request.session.get('lname')
+            email = request.session.get('email')
+            contact = request.session.get('contact')
+            password = request.session.get('password')
+            user = Customers(first_name=fname, last_name=lname, email=email, phone=contact, password=password)
+            user.save()
+            
+            # Clear session data after successful registration
+            del request.session['OTP_Key']
+            del request.session['fname']
+            del request.session['lname']
+            del request.session['email']
+            del request.session['contact']
+            del request.session['password']
+
+            messages.success(request, "Registration successful! Please login.")
+            return redirect('user:login')
+
+    return render(request, 'user_panel/email_otp.html')
 
 
 def resend_otp(request):
@@ -79,33 +167,38 @@ def resend_otp(request):
     return redirect('user:verify_otp')
 
 
-
 def login(request):
+    error_message = None  # Initialize error message
+
     if 'email' in request.session:
+        # Redirect if the user is already logged in
         return redirect('user:index')
 
     if request.method == 'POST':
         email = request.POST.get('email')
-        password = request.POST.get('pass')
+        password = request.POST.get('pass')  # Change variable name from password1 to password
 
-        if not email or not password:
-            messages.error(request, 'Email and password are required.')
-            return render(request, 'user_panel/login.html')
+        if not email or not password:  # Check if email and password are provided
+            error_message = 'Email and password are required.'
+        else:
+            try:
+                customer = Customers.objects.get(email=email)
+                if customer.is_blocked:
+                    error_message = 'Your account is blocked.'
+                else:
+                    if password == customer.password:
+                        # Password comparison using Django's check_password function
+                        request.session['email'] = email
+                        return redirect('user:index')   
+                    else:
+                        error_message = 'Incorrect email or password.'
+            except Customers.DoesNotExist:
+                error_message = 'No account found with this email.'
 
-        try:
-            customer = Customers.objects.get(email=email, is_blocked=False)
-            if password == customer.password:  # Directly compare passwords if stored in plain text
-                request.session['email'] = email
-                return redirect('user:index')
-            else:
-                messages.error(request, 'Incorrect email or password')
-        except Customers.DoesNotExist:
-            messages.error(request, 'No account found with this email')
-        except Customers.MultipleObjectsReturned:
-            messages.error(request, 'Multiple accounts found with this email. Please contact support.')
-
-    return render(request, 'user_panel/login.html')
-
+    context = {
+        'error_message': error_message
+    }
+    return render(request, 'user_panel/login.html', context)
 
 
 def forgot_pass(request):
@@ -117,20 +210,32 @@ def forgot_pass(request):
         
         try:
             user = Customers.objects.get(email=email)
-            contact = user.phone
-            print(number,contact)
-            if contact == number:
-                messages.error(request, "Number does not match")
+            
+            # Check if contact number matches the one stored in the database
+            if str(user.phone).strip() != str(number).strip():
+                messages.error(request, "Contact number does not match")
+                return redirect('user:forgot_pass')
+
+            
+            # Validate contact number
+            if not validate_contact(number):
+                messages.error(request, 'Invalid contact number format.')
                 return redirect('user:forgot_pass')
             
+            # Validate password
             if password1 != password2:
                 messages.error(request, "New passwords do not match")
                 return redirect('user:forgot_pass')
-            else:
-                user.password=password1
-                user.save()
-                messages.success(request, "Password changed successfully")
-                return redirect('user:login')
+            elif not validate_password(password1):
+                messages.error(request, 'Password must be at least 6 characters long, including one number, and no spaces.')
+                return redirect('user:forgot_pass')
+            
+            # Save the new password and redirect to login
+            user.password=password1
+            user.save()
+            messages.success(request, "Password changed successfully. Please log in with your new password.")
+            return redirect('user:login')
+        
         except Customers.DoesNotExist:
             messages.error(request, "User does not exist")
             return redirect('user:forgot_pass')
@@ -138,21 +243,47 @@ def forgot_pass(request):
     return render(request, "user_panel/forgot_panel.html")
 
 
+
 def logout(request):
     if 'email' in request.session:
         request.session.flush()
     return redirect('user:login')
 
-from django.http import JsonResponse
-from django.template.loader import render_to_string
 
 def index(request):
-    variant=Product_Variant.objects.all()
-    context={
-        "variant":variant
+    variants = Product_Variant.objects.all().order_by('-sale_price')
+    new_variant=Product_Variant.objects.all().order_by('-created_at')[:4] 
+    total_count = Product_Variant.objects.all().count()
+    context = {
+        "variant": variants,
+        "new_variant":new_variant,
+        "count":total_count
     }
-    return render(request,"user_panel/index.html",context)
+    return render(request, "user_panel/index.html", context)
 
+
+
+def sort_products(request):
+    sort_by = request.GET.get('sort_by')
+
+    # Handle invalid sort_by values
+    if sort_by not in ['low_to_high', 'high_to_low', 'a_to_z', 'z_to_a']:
+        return JsonResponse({'error': 'Invalid sort_by value'})
+
+    # Query the database based on sort_by value
+    if sort_by == 'low_to_high':
+        variants = Product_Variant.objects.all().order_by('sale_price')
+    elif sort_by == 'high_to_low':
+        variants = Product_Variant.objects.all().order_by('-sale_price')
+    elif sort_by == 'a_to_z':
+        variants = Product_Variant.objects.all().order_by('product__product_name')
+    else: 
+        sort_by == 'z_to_a'
+        variants = Product_Variant.objects.all().order_by('-product__product_name')
+
+    # Render the template with the sorted variants
+    html = render_to_string("user_panel/index.html", {'variant': variants})
+    return JsonResponse({'html': html})
 
 
 # @login_required(login_url='login')
@@ -169,6 +300,7 @@ def product_details(request,id):
 
 # user side-------------------------------------------------------------------
 
+
 def user_profile(request):
     if 'email' not in request.session:
         return redirect('user:login')
@@ -178,6 +310,29 @@ def user_profile(request):
         lname = request.POST['lname']
         new_email = request.POST['email']
         contact = request.POST['mobile']
+
+        if not validate_name(fname):
+            error_message = 'Name should start with a capital letter and contain only letters.'
+            messages.error(request, error_message)
+            return redirect('user:user_profile')
+
+        if not validate_name(lname):
+            error_message = 'Invalid last name format.'
+            messages.error(request, error_message)
+            return redirect('user:user_profile')
+
+        if not validate_contact(contact):
+            error_message = 'Invalid contact number format.'
+            messages.error(request, error_message)
+            return redirect('user:user_profile')
+
+        try:
+            validate_email(new_email)
+        except ValidationError:
+            error_message = 'Invalid email format.'
+            messages.error(request, error_message)
+            return redirect('user:user_profile')
+
 
         try:
             current_email = request.session['email']
@@ -193,7 +348,6 @@ def user_profile(request):
 
             return redirect('user:user_profile')
         except Customers.DoesNotExist:
-            # Handle the case where user does not exist
             return redirect('user:login')
 
     # If it's a GET request, display the user profile form
@@ -205,8 +359,8 @@ def user_profile(request):
         }
         return render(request, "user_panel/user_profile.html", context)
     except Customers.DoesNotExist:
-        # Handle the case where user does not exist
         return redirect('user:login')
+
 
 def add_address1(request):
     if 'email' not in request.session:
@@ -223,12 +377,39 @@ def add_address1(request):
         address1 = None
         has_address = False
 
+    error_message = None
+
     if request.method == 'POST':
-        locality = request.POST['locality']
-        pincode = request.POST['pin']
-        district = request.POST['district']
-        state = request.POST['state']
-        address_text = request.POST['address']
+        locality = request.POST.get('locality')
+        pincode = request.POST.get('pin')
+        district = request.POST.get('district')
+        state = request.POST.get('state')
+        address_text = request.POST.get('address')
+
+        if not validate_locality(locality):
+            error_message = 'Locality should start with a capital letter and contain only letters.'
+
+        elif not validate_pincode(pincode):
+            error_message = 'Invalid pincode format.'
+
+        elif not validate_district(district):
+            error_message = 'District should start with a capital letter and contain only letters.'
+
+        elif not validate_state(state):
+            error_message = 'State should start with a capital letter and contain only letters.'
+
+        elif not validate_address(address_text):
+            error_message = 'Address should contain only letters and numbers.'
+
+        if error_message:
+            # If there is an error message, display it on the form
+            messages.error(request, error_message)
+            context = {
+                'address1': address1,
+                'has_address': has_address,
+                'error_message': error_message
+            }
+            return render(request, 'user_panel/address1.html', context)
 
         if has_address:
             # If the user already has an address, update it
@@ -238,6 +419,7 @@ def add_address1(request):
             address1.district = district
             address1.state = state
             address1.save()
+            messages.success(request, 'Address one is updated.')
         else:
             # If the user doesn't have an address, create a new one
             Address1.objects.create(
@@ -248,6 +430,7 @@ def add_address1(request):
                 district=district,
                 state=state
             )
+            messages.success(request, 'Address one is created.')
 
         return redirect('user:user_profile')
 
@@ -255,8 +438,29 @@ def add_address1(request):
         'address1': address1,
         'has_address': has_address
     }
-    return render(request, 'user_panel/address1.html',context)
+    return render(request, 'user_panel/address1.html', context)
 
+
+
+def validate_locality(locality):
+    # Check if locality starts with a capital letter and contains only letters
+    return locality[0].isupper() and locality.isalpha()
+
+def validate_pincode(pincode):
+    # Check if pincode contains only digits and has a length of 6
+    return pincode.isdigit() and len(pincode) == 6
+
+def validate_district(district):
+    # Check if district starts with a capital letter and contains only letters
+    return district[0].isupper() and district.isalpha()
+
+def validate_state(state):
+    # Check if state starts with a capital letter and contains only letters
+    return state[0].isupper() and state.isalpha()
+
+def validate_address(address):
+    # Check if address contains only letters and numbers
+    return bool(re.match('^[a-zA-Z0-9\s]+$', address.strip()))
 
 def delete_address(request):
     if 'email' not in request.session:
@@ -288,9 +492,11 @@ def add_address2(request):
     try:
         address2 = Address2.objects.get(user=user)
         has_address = True
-    except Address2.DoesNotExist:  # Corrected to Address2.DoesNotExist
+    except Address2.DoesNotExist:
         address2 = None
         has_address = False
+
+    error_message = None  # Define error_message here
 
     if request.method == 'POST':
         locality = request.POST['locality']
@@ -299,6 +505,31 @@ def add_address2(request):
         state = request.POST['state']
         address_text = request.POST['address']
 
+        if not validate_locality(locality):
+            error_message = 'Locality should start with a capital letter and contain only letters.'
+
+        elif not validate_pincode(pincode):
+            error_message = 'Invalid pincode format.'
+
+        elif not validate_district(district):
+            error_message = 'District should start with a capital letter and contain only letters.'
+
+        elif not validate_state(state):
+            error_message = 'State should start with a capital letter and contain only letters.'
+            
+        elif not validate_address(address_text):
+            error_message = 'Address should contain only letters and numbers.'
+        
+        if error_message:
+            # If there is an error message, display it on the form
+            messages.error(request, error_message)
+            context = {
+                'address2': address2,
+                'has_address': has_address,
+                'error_message': error_message
+            }
+            return render(request, 'user_panel/address2.html', context)
+
         if has_address:
             address2.address = address_text
             address2.locality = locality
@@ -306,6 +537,7 @@ def add_address2(request):
             address2.district = district
             address2.state = state
             address2.save()
+            messages.success(request, 'Address two is updated.')
         else:
             Address2.objects.create(
                 user=user,
@@ -315,6 +547,7 @@ def add_address2(request):
                 district=district,
                 state=state
             )
+            messages.success(request, 'Address one is Created.')
 
         return redirect('user:user_profile')
 
@@ -322,7 +555,8 @@ def add_address2(request):
         'address2': address2,
         'has_address': has_address
     }
-    return render(request, "user_panel/address2.html", context)  # Added missing context
+    return render(request, "user_panel/address2.html", context)
+  # Added missing context
 
 
 def delete_address2(request):
@@ -368,6 +602,10 @@ def change_pass(request):
         if old_pass != user_password:
             messages.error(request, 'Incorrect old password')
             return redirect('user:change_pass')
+        
+        elif not validate_password(new_pass1):
+                messages.error(request, 'Password must be at least 6 characters long, including one number, and no spaces.')
+                return redirect('user:forgot_pass')
         
         print("evide ethiyo")
         # Check if the new passwords match

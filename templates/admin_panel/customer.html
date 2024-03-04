@@ -228,8 +228,8 @@
                                     <th>Customers</th>
                                     <th>Email</th>
                                     <th>Action</th>
-                                    <th>Edit</th>
-                                    <th class="text-end">Delete</th>
+                                    {% comment %} <th>Edit</th> {% endcomment %}
+                                    {% comment %} <th class="text-end">Delete</th> {% endcomment %}
                                 </tr>
                             </thead>
                             <tbody>
@@ -247,12 +247,41 @@
                                         </a>
                                     </td>
                                     <td>{{obj.email}}</td>
-                                    <td><a type="button" href="/block/{{obj.id}}" class="btn btn-outline-primary">Block</a>
-                                        <a type="button" href="/unblock/{{obj.id}}" class="btn btn-outline-primary">Unblock</a></td>
-                                    <td><a type="button" href="/customer_edit/{{obj.id}}" class="btn btn-outline-success">Edit</a></td>
-                                    <td class="text-end">
-                                        <a href="/delete/{{obj.id}}" class="btn btn-sm btn-brand rounded font-sm mt-15">Delete</a>
+                                    <td>
+                                        <a id="blockBtn" type="button" href="/block/{{obj.id}}" onclick="toggleButton('blockBtn', 'unblockBtn')" class="btn {% if blockBtnActive %}btn-primary{% else %}btn-outline-primary{% endif %}">Block</a>
+                                        <a id="unblockBtn" type="button"  href="/unblock/{{obj.id}}" onclick="toggleButton('unblockBtn', 'blockBtn')" class="btn {% if unblockBtnActive %}btn-primary{% else %}btn-outline-primary{% endif %}">Unblock</a>
+                                        <script>
+                                            function toggleButton(clickedBtnId, otherBtnId) {
+                                                var clickedBtn = document.getElementById(clickedBtnId);
+                                                var otherBtn = document.getElementById(otherBtnId);
+                                                
+                                                // Change color of the clicked button
+                                                clickedBtn.classList.remove('btn-outline-primary');
+                                                clickedBtn.classList.add('btn-primary');
+                                                
+                                                // Reset color of the other button
+                                                otherBtn.classList.remove('btn-primary');
+                                                otherBtn.classList.add('btn-outline-primary');
+                                                
+                                                // Update localStorage to store the state
+                                                localStorage.setItem('lastUsedButton', clickedBtnId);
+                                            }
+                                            
+                                            // Retrieve last used button from localStorage on page load
+                                            window.onload = function() {
+                                                var lastUsedButton = localStorage.getItem('lastUsedButton');
+                                                if (lastUsedButton === 'blockBtn') {
+                                                    toggleButton('blockBtn', 'unblockBtn');
+                                                } else if (lastUsedButton === 'unblockBtn') {
+                                                    toggleButton('unblockBtn', 'blockBtn');
+                                                }
+                                            };
+                                        </script>
                                     </td>
+                                    {% comment %} <td><a type="button" href="/customer_edit/{{obj.id}}" class="btn btn-outline-success">Edit</a></td> {% endcomment %}
+                                    {% comment %} <td class="text-end">
+                                        <a href="/delete/{{obj.id}}" class="btn btn-sm btn-brand rounded font-sm mt-15">Delete</a>
+                                    </td> {% endcomment %}
                                 </tr>
                                 {% endfor %}
                             </tbody>

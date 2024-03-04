@@ -7,14 +7,21 @@ from django.contrib import messages,auth
 def admin_login(request):
     if 'username' in request.session:
         return redirect('admin_index')
-    if request.method=='POST':
-        username=request.POST['username']
-        password=request.POST['password']
+
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+
         user = auth.authenticate(username=username, password=password)
+        
         if user is not None and user.username == 'admin':
             request.session['username'] = username
             return redirect('admin_index')
-    return render(request,"admin_panel/login.html")
+        else:
+            error_message = "Invalid username or password."
+            return render(request, "admin_panel/login.html", {"error_message": error_message})
+    
+    return render(request, "admin_panel/login.html")
 
 def admin_logout(request):
     if 'username' in request.session:

@@ -20,12 +20,15 @@ class Attribute_Value(models.Model):
 # Products----------------------------------------------------------------------------------------
 
 class Products(models.Model):
-    product_name=models.CharField(max_length=100)
-    product_category=models.ForeignKey(Category,on_delete=models.CASCADE)
-    product_brand=models.ForeignKey(Brand,on_delete=models.CASCADE)
+    product_name = models.CharField(max_length=100)
+    product_category = models.ForeignKey(Category,on_delete=models.CASCADE)
+    product_brand = models.ForeignKey(Brand,on_delete=models.CASCADE)
     is_active = models.BooleanField(default=True)
-    created_at =models.DateTimeField(auto_now_add=True)
-    product_description = models.TextField(max_length=250)
+    created_at = models.DateTimeField(auto_now_add=True)
+    camera = models.CharField(max_length=20,default='Unknown')
+    display = models.CharField(max_length=10,default='Unknown')
+    battery = models.CharField(max_length=8,default='Unknown')
+    processor = models.CharField(max_length=20,default='Unknown')
 
 
     def __str__(self):
@@ -37,10 +40,12 @@ class Products(models.Model):
 class Product_Variant(models.Model):
     product = models.ForeignKey(Products,on_delete=models.CASCADE)
     attributes = models.ManyToManyField(Attribute_Value,related_name='attributes')
-    max_price = models.DecimalField(max_digits=7, decimal_places=3)
-    sale_price = models.DecimalField(max_digits=7, decimal_places=3)
+    max_price = models.DecimalField(max_digits=10, decimal_places=2)
+    sale_price = models.DecimalField(max_digits=10, decimal_places=2)
     stock = models.IntegerField()
     thumbnail_image = models.ImageField(upload_to='images/')
+    thumbnail_image1 =models.ImageField(upload_to='images/',default='Unknown')
+    thumbnail_image2 =models.ImageField(upload_to='images/',default='Unknown')
     is_active = models.BooleanField(default=True)
     created_at =models.DateTimeField(auto_now_add=True)
     

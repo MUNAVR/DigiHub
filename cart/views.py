@@ -83,7 +83,9 @@ def delete_all(request):
 
 
 def update_cart_quantity(request):
-    if request.method == "POST" and request.is_ajax():
+    email = request.session.get('email')
+    user = Customers.objects.get(email=email)
+    if request.method == "POST":
         cart_item_id = request.POST.get("cart_item_id")
         quantity = int(request.POST.get("quantity"))
         print(quantity)
@@ -91,6 +93,10 @@ def update_cart_quantity(request):
             cart_item = Cart.objects.get(pk=cart_item_id)
             cart_item.quantity = quantity
             cart_item.save()
+            
+            products=Cart.objects.all(user_id=user)
+            items=CartItems(user=user,cart=products)
+            items.save()
             
             # Calculate subtotal
             subtotal = cart_item.product_variant.sale_price * quantity
