@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Offer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        form {
+            max-width: 500px;
+            margin: 20px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+        }
+        input[type="text"],
+        input[type="date"],
+        select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        input[type="submit"] {
+            background-color: #4CAF50;
+            color: white;
+            padding: 14px 20px;
+            margin: 8px 0;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+        }
+        input[type="submit"]:hover {
+            background-color: #45a049;
+
+        }
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid transparent;
+            border-radius: 4px;
+        }
+
+        .alert-danger {
+            color: #721c24;
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+        }
+
+        /* Additional styles for list items in error messages */
+        .alert-danger ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .alert-danger ul li {
+            margin-bottom: 5px;
+        }
+
+        /* Alternative error message style */
+        .error-message {
+            color: #721c24;
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 4px;
+            padding: 10px 15px;
+            margin-bottom: 20px;
+            max-width: 400px; /* Adjust the max-width as needed */
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Additional styles for list items in error messages */
+        .error-message ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .error-message ul li {
+            margin-bottom: 5px;
+        }
+</style>
+</head>
+<body>
+    <h1>Create Offer</h1>
+    {% if error_messages %}
+        <div class="alert alert-danger" role="alert">
+                <ul>
+                    {% for message in error_messages %}
+                        <li>{{ message }}</li>
+                    {% endfor %}
+                </ul>
+        </div>
+    {% endif %}
+    <form action="{% url 'create_offer' %}" method="post">
+        {% csrf_token %}
+        <label for="offer_type">Offer Type:</label>
+        <select name="offer_type" id="offer_type">
+            <option value="referral">Referral Offer</option>
+            <option value="product">Product Offer</option>
+            <option value="brand">Brand Offer</option>
+        </select>
+        <br><br>
+        <label for="discount_percentage">Discount Percentage:</label>
+        <input type="text" name="discount_percentage" id="discount_percentage" required>
+        <br><br>
+        <label for="maximum_discount_amount">Maximum Discount Amount:</label>
+        <input type="text" name="maximum_discount_amount" id="maximum_discount_amount" required>
+        <br><br>
+        <label for="minimum_discount_amount">Minimum Discount Amount:</label>
+        <input type="text" name="minimum_discount_amount" id="minimum_discount_amount" required>
+        <br><br>
+        <label for="valid_to">Valid To:</label>
+        <input type="date" name="valid_to" id="valid_to" required>
+        <br><br>
+
+        <!-- Additional fields based on offer type -->
+        <div id="extra_fields"></div>
+
+        <!-- Offer code -->
+
+        <input type="submit" value="Create Offer">
+    </form>
+    <script>
+        document.getElementById("offer_type").addEventListener("change", function() {
+            var offerType = this.value;
+            var extraFields = document.getElementById("extra_fields");
+            extraFields.innerHTML = "";
+
+            if (offerType === "product") {
+                extraFields.innerHTML += `
+                <select name="product_name" id="product_name" required>
+                    <option value="">Select a product</option>
+                    {% for product in product %}
+                    <option value="{{ product.id }}">{{ product.product_name }}</option>
+                    {% endfor %}
+                </select>
+                `;
+            } else if (offerType === "brand") {
+                extraFields.innerHTML += `
+                <select name="brand_name" id="brand_name" required>
+                    <option value="">Select a brand</option>
+                    {% for brand in brand %}
+                    <option value="{{ brand.id }}">{{ brand.name }}</option>
+                    {% endfor %}
+                </select>
+                `;
+            } else if (offerType === "referral") {
+                extraFields.innerHTML += `
+                    <label for="referral_code">Referral Code:</label>
+                    <input type="text" name="referral_code" id="referral_code" required>
+                    <br><br>
+                    <label for="referred_by">Referred By:</label>
+                    <select name="referred_by" id="referred_by" required>
+                        <option value="">Select Referred By</option>
+                        <!-- Iterate over users in your database -->
+                        {% for user in customers %}
+                            <option value="{{ user.id }}">{{ user.first_name }}</option>
+                        {% endfor %}
+                    </select>
+                    <br><br>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>

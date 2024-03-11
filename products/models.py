@@ -48,6 +48,7 @@ class Product_Variant(models.Model):
     thumbnail_image2 =models.ImageField(upload_to='images/',default='Unknown')
     is_active = models.BooleanField(default=True)
     created_at =models.DateTimeField(auto_now_add=True)
+    rom=models.CharField(max_length=50,default='128GB')
     
     def __str__(self):
         return self.product_variant.product

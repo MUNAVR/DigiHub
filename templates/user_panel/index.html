@@ -1,88 +1,9 @@
+{% extends 'user_panel/base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html class="no-js" lang="en">
 
+{% block title %}home{% endblock %}
 
-<!-- Mirrored from wp.alithemes.com/html/evara/evara-frontend/index.html by HTTrack Website Copier/3.x [XR&CO'2014], Sun, 01 Aug 2021 15:20:36 GMT -->
-<head>
-    <meta charset="utf-8">
-    <title>DIGI HUB</title>
-    <meta http-equiv="x-ua-compatible" content="ie=edge">
-    <meta name="description" content="">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta property="og:title" content="">
-    <meta property="og:type" content="">
-    <meta property="og:url" content="">
-    <meta property="og:image" content="">
-    <!-- Favicon -->
-    <link rel="shortcut icon" type="image/x-icon" href="{% static 'imgs/theme/favicon.svg' %}">
-    <!-- Template CSS -->
-    <link rel="stylesheet" href="{% static 'css/main.css' %}">
-
-
-</head>
-
-<body>
-    <header class="header-area header-style-1 header-height-2">
-        <div class="header-top header-top-ptb-1 d-none d-lg-block">
-            <div class="container">
-                <div class="row align-items-center">
-                    <div class="col-xl-3 col-lg-4">
-                        <div class="header-info">
-                            <ul>
-                                <li><i class="fi-rs-smartphone"></i> <a href="#">(+91)9562978458</a></li>
-                                <li><i class="fi-rs-marker"></i><a  href="#">KOCHI</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div class="col-xl-3 col-lg-4">
-                        <div class="header-info header-info-right">
-                            <ul>
-                                <li><i class="fi-rs-user"></i><a href="{% url 'user:login' %}">Log In</a></li>
-                                <li><i class="fi-rs-user"></i><a href="{% url 'user:logout' %}">Logout</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="header-middle header-middle-ptb-1 d-none d-lg-block">
-            <div class="container">
-                <div class="header-wrap">
-                    <div class="logo logo-width-1">
-                        <a href="user:index"><img src="{% static 'imgs\page\smartphone-logo-communication-electronics-vector-modern-phone-design-company-brand-symbol_638875-2356.avif' %}" alt="logo"></a>
-                    </div>
-                    <div class="header-right">
-                        <div class="search-style-2">
-                            <form action="#">
-                                <input type="text" placeholder="Search for Mobiles...">
-                            </form>
-                        </div>
-                        <div class="header-action-2">
-                            <div class="header-action-icon-2" href="shop-cart.html">
-                                <a href="{% url 'user:user_profile' %}">
-                                    <img class="svgInject" alt="User Profile" src="{% static 'imgs/theme/icons/icons-userprofile.png' %}">
-                                </a>
-                            </div>
-                            <div class="header-action-icon-2">
-                                <a href="shop-wishlist.html" href="shop-cart.html">
-                                    <img class="svgInject" alt="Wishlist" src="{% static 'imgs/theme/icons/icon-heart.svg' %}">
-                                    <span class="pro-count blue">4</span>
-                                </a>
-                            </div>
-                            <div class="header-action-icon-2">
-                                <a class="mini-cart-icon" href="{% url 'shop_cart' %}">
-                                    <img alt="Cart" src="{% static 'imgs/theme/icons/icon-cart.svg' %}">
-                                    <span class="pro-count blue">2</span>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-    </header>
+{% block content %}
     <div>
         <img src="{% static 'imgs\page\67500b5f-b206-41f4-b057-ac57f119c168.__CR0,0,1464,600_PT0_SX1464_V1___.jpg' %}" style="height: 600px;" width="100%">
     </div>
@@ -116,8 +37,9 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="product-list mb-50" id="product-list">
+                            <div class="product-list mb-50" >
                                     {% for variant in variant %}
+                                    {% for attribute_value in variant.attributes.all %}
                                 <div class="product-cart-wrap">
                                     <div class="product-img-action-wrap">
                                         <div class="product-img product-img-zoom">
@@ -127,7 +49,7 @@
                                             </a>
                                         </div>
                                         <div class="product-action-1">
-                                            <a aria-label="Add To Wishlist" class="action-btn hover-up" href="shop-wishlist.html"><i class="fi-rs-heart"></i></a>
+                                            <a aria-label="Add To Wishlist" class="action-btn hover-up" href="{% url 'add_wishlist' variant.id %}"><i class="fi-rs-heart"></i></a>
                                         </div>
                                     </div>
                                     <div class="product-content-wrap">
@@ -144,18 +66,18 @@
                                             <span> ₹ {{variant.sale_price}}</span>
                                             <span class="old-price"> ₹ {{variant.max_price}}</span>
                                         </div>
-                                        <p class="mt-15">Lorem ipsum dolor sit, amet consectetur adipisicing elit. Nam beatae consectetur, atque inventore aliquam adipisci perspiciatis nostrum qui consequatur praesentium?</p>
+                                        <li class="mb-10"><i class="fi-rs-crown mr-5"></i> {{ attribute_value.attribute_ram }}</li>
+                                        {% comment %} <li class="mb-10"><i class="fi-rs-crown mr-5"></i>Color: {{ attribute_value.attribute_color }}</li> {% endcomment %}
+                                        <li class="mb-10"><i class="fi-rs-crown mr-5"></i>Camera: {{ variant.product.camera }}</li>
+                                        <li class="mb-10"><i class="fi-rs-crown mr-5"></i>Display: {{ variant.product.display }}</li>
+                                        <li class="mb-10"><i class="fi-rs-crown mr-5"></i>Battery: {{variant.product.battery}}</li>
                                         <div id="popup-messages"></div>
                                         <div class="product-action-1 show">
                                             <a aria-label="Now" class="action-btn" href="{% url 'add_cart' variant.id %}"><i class="fi-rs-shopping-bag-add"></i>Add to Cart</a>
-                                            <div class="rating-result" title="90%">
-                                                <span>
-                                                    <span>50%</span>
-                                                </span>
-                                            </div>
                                         </div>
                                     </div>
                                 </div>
+                                    {% endfor %}
                                     {% endfor %}
                             </div>
                             <!--pagination-->
@@ -169,12 +91,13 @@
                                 </div>
                                 {% for variant in new_variant %}
                                 <div class="single-post clearfix">
-                                    
-                                    <div class="image">
-                                        <img src="{{ variant.thumbnail_image.url}}" alt="#">
-                                    </div>
+                                    <a  href="product_details/{{variant.id}}">
+                                        <div class="image">
+                                            <img src="{{ variant.thumbnail_image.url}}" alt="#">
+                                        </div>
+                                    </a>
                                     <div class="content pt-10">
-                                        <h5><a href="shop-product-detail.html">{{variant.product.product_name}}</a></h5>
+                                        <h5><a href="product_details/{{variant.id}}">{{variant.product.product_name}}</a></h5>
                                         <p class="price mb-0 mt-5"> ₹ {{variant.sale_price}}</p>
                                         <div class="product-rate">
                                             <div class="product-rating" style="width:90%"></div>
@@ -213,149 +136,31 @@
             
         </script>
 
+<script>
+            // Get the modal element
+        var modal = document.getElementById("messageModal");
 
-        <footer class="main">
-        <section class="newsletter p-30 text-white wow fadeIn animated">
-            <div class="container">
-                <div class="row align-items-center">
-                    <div class="col-lg-7 mb-md-3 mb-lg-0">
-                        <div class="row align-items-center">
-                            <div class="col flex-horizontal-center">
-                                <img class="icon-email" src="{% static 'imgs/theme/icons/icon-email.svg' %}" alt="">
-                                <h4 class="font-size-20 mb-0 ml-3">Sign up to Newsletter</h4>
-                            </div>
-                            <div class="col my-4 my-md-0 des">
-                                <h5 class="font-size-15 ml-4 mb-0">...and receive <strong>$25 coupon for first shopping.</strong></h5>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-5">
-                        <!-- Subscribe Form -->
-                        <form class="form-subcriber d-flex wow fadeIn animated">
-                            <input type="email" class="form-control bg-white font-small" placeholder="Enter your email">
-                            <button class="btn bg-dark text-white" type="submit">Subscribe</button>
-                        </form>
-                        <!-- End Subscribe Form -->
-                    </div>
-                </div>
-            </div>
-        </section>
-        <section class="section-padding footer-mid">
-            <div class="container pt-15 pb-20">
-                <div class="row">
-                    <div class="col-lg-4 col-md-6">
-                        <div class="widget-about font-md mb-md-5 mb-lg-0">
-                            <div class="logo logo-width-1 wow fadeIn animated">
-                                <a href="index.html"><img src="{% static 'imgs/theme/logo.svg'%}" alt="logo"></a>
-                            </div>
-                            <h5 class="mt-20 mb-10 fw-600 text-grey-4 wow fadeIn animated">Contact</h5>
-                            <p class="wow fadeIn animated">
-                                <strong>Address: </strong>562 Wellington Road, Street 32, San Francisco
-                            </p>
-                            <p class="wow fadeIn animated">
-                                <strong>Phone: </strong>+01 2222 365 /(+91) 01 2345 6789
-                            </p>
-                            <p class="wow fadeIn animated">
-                                <strong>Hours: </strong>10:00 - 18:00, Mon - Sat
-                            </p>
-                            <h5 class="mb-10 mt-30 fw-600 text-grey-4 wow fadeIn animated">Follow Us</h5>
-                            <div class="mobile-social-icon wow fadeIn animated mb-sm-5 mb-md-0">
-                                <a href="#"><img src="{% static 'imgs/theme/icons/icon-facebook.svg' %}" alt=""></a>
-                                <a href="#"><img src="{% static 'imgs/theme/icons/icon-twitter.svg' %}" alt=""></a>
-                                <a href="#"><img src="{% static 'imgs/theme/icons/icon-instagram.svg'%}" alt=""></a>
-                                <a href="#"><img src="{% static 'imgs/theme/icons/icon-pinterest.svg'%}" alt=""></a>
-                                <a href="#"><img src="{% static 'imgs/theme/icons/icon-youtube.svg'%}" alt=""></a>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-2 col-md-3">
-                        <h5 class="widget-title wow fadeIn animated">About</h5>
-                        <ul class="footer-list wow fadeIn animated mb-sm-5 mb-md-0">
-                            <li><a href="#">About Us</a></li>
-                            <li><a href="#">Delivery Information</a></li>
-                            <li><a href="#">Privacy Policy</a></li>
-                            <li><a href="#">Terms &amp; Conditions</a></li>
-                            <li><a href="#">Contact Us</a></li>
-                            <li><a href="#">Support Center</a></li>
-                        </ul>
-                    </div>
-                    <div class="col-lg-2  col-md-3">
-                        <h5 class="widget-title wow fadeIn animated">My Account</h5>
-                        <ul class="footer-list wow fadeIn animated">
-                            <li><a href="#">Sign In</a></li>
-                            <li><a href="#">View Cart</a></li>
-                            <li><a href="#">My Wishlist</a></li>
-                            <li><a href="#">Track My Order</a></li>
-                            <li><a href="#">Help</a></li>
-                            <li><a href="#">Order</a></li>
-                        </ul>
-                    </div>
-                    <div class="col-lg-4">
-                        <h5 class="widget-title wow fadeIn animated">Install App</h5>
-                        <div class="row">
-                            <div class="col-md-8 col-lg-12">
-                                <p class="wow fadeIn animated">From App Store or Google Play</p>
-                                <div class="download-app wow fadeIn animated">
-                                    <a href="#" class="hover-up mb-sm-4 mb-lg-0"><img class="active" src="{% static 'imgs/theme/app-store.jpg'%}" alt=""></a>
-                                    <a href="#" class="hover-up"><img src="{% static 'imgs/theme/google-play.jpg'%}" alt=""></a>
-                                </div>
-                            </div>
-                            <div class="col-md-4 col-lg-12 mt-md-3 mt-lg-0">
-                                <p class="mb-20 wow fadeIn animated">Secured Payment Gateways</p>
-                                <img class="wow fadeIn animated" src="{% static 'imgs/theme/payment-method.png'%}" alt="">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-        <div class="container pb-20 wow fadeIn animated">
-            <div class="row">
-                <div class="col-12 mb-20">
-                    <div class="footer-bottom"></div>
-                </div>
-                <div class="col-lg-6">
-                    <p class="float-md-left font-sm text-muted mb-0">&copy; 2021, <strong class="text-brand">Evara</strong> - HTML Ecommerce Template </p>
-                </div>
-                <div class="col-lg-6">
-                    <p class="text-lg-end text-start font-sm text-muted mb-0">
-                        Designed by <a href="http://alithemes.com/" target="_blank">Alithemes.com</a>. All rights reserved
-                    </p>
-                </div>
-            </div>
-        </div>
-    </footer>
-    <!-- Vendor JS-->
-    <script src="{% static 'js/vendor/modernizr-3.6.0.min.js' %}"></script>
-    <script src="{% static 'js/vendor/jquery-3.6.0.min.js' %}"></script>
-    <script src="{% static 'js/vendor/jquery-migrate-3.3.0.min.js'%}"></script>
-    <script src="{% static 'js/vendor/bootstrap.bundle.min.js'%}"></script>
-    <script src="{% static 'js/plugins/slick.js'%}"></script>
-    <script src="{% static 'js/plugins/jquery.syotimer.min.js'%}"></script>
-    <script src="{% static 'js/plugins/wow.js'%}"></script>
-    <script src="{% static 'js/plugins/jquery-ui.js'%}"></script>
-    <script src="{% static 'js/plugins/perfect-scrollbar.js'%}"></script>
-    <script src="{% static 'js/plugins/magnific-popup.js'%}"></script>
-    <script src="{% static 'js/plugins/select2.min.js'%}"></script>
-    <script src="{% static 'js/plugins/waypoints.js'%}"></script>
-    <script src="{% static 'js/plugins/counterup.js'%}"></script>
-    <!-- <script src="{% static 'js/plugins/jquery.countdown.min.js'%}"></script> -->
-    <script src="{% static 'js/plugins/images-loaded.js'%}"></script>
-    <script src="{% static 'js/plugins/isotope.js'%}"></script>
-    <script src="{% static 'js/plugins/scrollup.js'%}"></script>
-    <script src="{% static 'js/plugins/jquery.vticker-min.js'%}"></script>
-    <script src="{% static 'js/plugins/jquery.theia.sticky.js'%}"></script>
-    <script src="{% static 'js/plugins/jquery.elevatezoom.js' %}"></script>
-    <!-- Template  JS -->
-    <script src="{% static 'js/main.js'%}"></script>
-    <script src="{% static 'js/shop.js'%}"></script>
-    
+        // Get the <span> element that closes the modal
+        var span = document.getElementsByClassName("close")[0];
 
-</body>
+        // Function to open the modal with message content
+        function showMessage(message) {
+        var messageContent = document.getElementById("messageContent");
+        messageContent.innerHTML = message;
+        modal.style.display = "block";
+        }
 
+        // When the user clicks on <span> (x), close the modal
+        span.onclick = function() {
+        modal.style.display = "none";
+        }
 
-<!-- Mirrored from wp.alithemes.com/html/evara/evara-frontend/index.html by HTTrack Website Copier/3.x [XR&CO'2014], Sun, 01 Aug 2021 15:25:49 GMT -->
-</html>
+        // When the user clicks anywhere outside of the modal, close it
+        window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+        }
 
-
-
+</script>
+{% endblock %}

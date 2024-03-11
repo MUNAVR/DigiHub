@@ -4,6 +4,8 @@ from datetime import datetime
 from decimal import Decimal
 from django.http import Http404
 from django.contrib import messages
+from django.http import Http404
+from django.core.exceptions import ValidationError
 # Create your views here.
 
 
@@ -257,7 +259,10 @@ def product_grid(request):
 
 # variant---------------------------------------------------------------------------------------
 
-from django.http import Http404
+
+def validate_image_extension(file):
+    if not file.name.lower().endswith(('.jpg', '.jpeg', '.png')):
+        raise ValidationError('Only JPEG and PNG files are allowed.')
 
 def variant_add(request):
     attributes = Attribute_Value.objects.filter(is_active=True)
@@ -293,6 +298,8 @@ def variant_add(request):
                 error_message = 'Stock must be greater than 0.'
             elif not product_id:
                 error_message = 'Please select a product.'
+            elif not thumbnail_image:
+                error_message = 'Please upload an image.'
             else:
                 # Check if the same variant already exists
                 selected_attributes = request.POST.getlist('variant')
@@ -306,6 +313,16 @@ def variant_add(request):
             context['error_message'] = error_message
             return render(request, "admin_panel/variant_add.html", context)
 
+        # Validate image file extensions
+        try:
+            validate_image_extension(thumbnail_image)
+            if thumbnail_image1:
+                validate_image_extension(thumbnail_image1)
+            if thumbnail_image2:
+                validate_image_extension(thumbnail_image2)
+        except ValidationError as e:
+            context['error_message'] = str(e)
+            return render(request, "admin_panel/variant_add.html", context)
 
         try:
             product = Products.objects.get(id=product_id)
@@ -318,11 +335,16 @@ def variant_add(request):
             # Update the existing variant instead of creating a new one
             variant = existing_variant.first()
             variant.thumbnail_image = thumbnail_image
+            if thumbnail_image1:
+                variant.thumbnail_image1 = thumbnail_image1
+            if thumbnail_image2:
+                variant.thumbnail_image2 = thumbnail_image2
             variant.save()
         else:
             # Create a new variant
             obj = Product_Variant(product=product, max_price=max_price, sale_price=sale_price,
-                                  stock=stock, thumbnail_image=thumbnail_image,thumbnail_image1=thumbnail_image1,thumbnail_image2=thumbnail_image2)
+                                  stock=stock, thumbnail_image=thumbnail_image, thumbnail_image1=thumbnail_image1,
+                                  thumbnail_image2=thumbnail_image2)
             obj.save()
             messages.success(request, 'Variant Create  successfully.')
 
@@ -339,6 +361,7 @@ def variant_add(request):
         return redirect('variant_list')
 
     return render(request, "admin_panel/variant_add.html", context)
+
 
 
 
@@ -365,9 +388,9 @@ def variant_edit(request, id):
         max_price = request.POST['max_price']
         sale_price = request.POST['sale_price']
         stock = request.POST['stock']
-        thumbnail_image = request.FILES['image']
-        thumbnail_image1 = request.FILES['image1']
-        thumbnail_image2 = request.FILES['image2']
+        thumbnail_image = request.FILES.get('image')
+        thumbnail_image1 = request.FILES.get('image1')
+        thumbnail_image2 = request.FILES.get('image2')
         is_active = request.POST['active']
 
         error_message = None
@@ -384,10 +407,21 @@ def variant_edit(request, id):
                 error_message = 'Sale price cannot be greater than the maximum price.'
             elif stock <= 0:
                 error_message = 'Stock must be greater than 0.'
-            
 
         if error_message:
             context['error_message'] = error_message
+            return render(request, "admin_panel/variant_edit.html", context)
+
+        # Validate image file extensions
+        try:
+            if thumbnail_image:
+                validate_image_extension(thumbnail_image)
+            if thumbnail_image1:
+                validate_image_extension(thumbnail_image1)
+            if thumbnail_image2:
+                validate_image_extension(thumbnail_image2)
+        except ValidationError as e:
+            context['error_message'] = str(e)
             return render(request, "admin_panel/variant_edit.html", context)
 
         # Update the Product_Variant instance
@@ -395,25 +429,16 @@ def variant_edit(request, id):
         edit.max_price = max_price
         edit.sale_price = sale_price
         edit.stock = stock
-        edit.thumbnail_image = thumbnail_image
-        edit.thumbnail_image1 = thumbnail_image1
-        edit.thumbnail_image2 = thumbnail_image2
+        if thumbnail_image:
+            edit.thumbnail_image = thumbnail_image
+        if thumbnail_image1:
+            edit.thumbnail_image1 = thumbnail_image1
+        if thumbnail_image2:
+            edit.thumbnail_image2 = thumbnail_image2
         edit.is_active = is_active
 
         edit.save()
         messages.success(request, 'Variant Edit successfully.')
-
-        # Update variant attributes
-        # variant_attribute_ids = request.POST.getlist('variant')
-        # edit.attributes.clear()  # Remove existing attributes
-        # for attribute_id in variant_attribute_ids:
-        #     if attribute_id:  # Check if attribute_id is not empty
-        #         try:
-        #             attribute_value = Attribute_Value.objects.get(pk=attribute_id)
-        #             edit.attributes.add(attribute_value)
-        #         except Attribute_Value.DoesNotExist:
-        #             # Handle the case where the Attribute_Value object does not exist
-        #             raise Http404("Attribute_Value with ID {} does not exist".format(attribute_id))
 
         return redirect('variant_list')
     return render(request, "admin_panel/variant_edit.html", context)

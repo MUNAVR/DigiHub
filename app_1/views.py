@@ -6,7 +6,7 @@ from django.contrib import messages
 from django.conf import settings
 from django.core.mail import send_mail
 import random
-from products.models import Product_Variant
+from products.models import Product_Variant,Attribute_Value
 from django.contrib.auth.hashers import check_password
 from django.core import serializers
 from django.http import JsonResponse
@@ -18,6 +18,9 @@ from django.contrib import messages
 from django.core.exceptions import ValidationError
 from django.contrib.auth.hashers import check_password
 from django.urls import reverse
+from app_1.decorators import check_blocked
+from django.contrib.auth.decorators import login_required
+from category.models import Brand
 
 
 def google_oauth_callback(request):
@@ -251,15 +254,35 @@ def logout(request):
 
 
 def index(request):
-    variants = Product_Variant.objects.all().order_by('-sale_price')
-    new_variant=Product_Variant.objects.all().order_by('-created_at')[:4] 
-    total_count = Product_Variant.objects.all().count()
+    # Get all active product variants with their related products, categories, brands, and attributes
+    variants = Product_Variant.objects.filter(
+        product__is_active=True,
+        product__product_category__is_active=True,
+        product__product_brand__is_active=True,
+    ).select_related('product', 'product__product_category', 'product__product_brand')
+
+    # Filter variants further to include only those with all active attributes
+    active_variants = []
+    for variant in variants:
+        if all(attribute.is_active for attribute in variant.attributes.all()):
+            active_variants.append(variant)
+
+    # Order the active variants by sale price
+    active_variants = sorted(active_variants, key=lambda x: x.sale_price, reverse=True)
+
+    # Get the latest 4 active variants
+    new_variants = active_variants[:4]
+
     context = {
-        "variant": variants,
-        "new_variant":new_variant,
-        "count":total_count
+        "variant": active_variants,
+        "new_variant": new_variants,
+        "count": len(active_variants)
     }
+
     return render(request, "user_panel/index.html", context)
+
+
+
 
 
 
@@ -269,6 +292,8 @@ def sort_products(request):
     # Handle invalid sort_by values
     if sort_by not in ['low_to_high', 'high_to_low', 'a_to_z', 'z_to_a']:
         return JsonResponse({'error': 'Invalid sort_by value'})
+    
+    new_variant=Product_Variant.objects.all().order_by('-created_at')[:4] 
 
     # Query the database based on sort_by value
     if sort_by == 'low_to_high':
@@ -282,25 +307,45 @@ def sort_products(request):
         variants = Product_Variant.objects.all().order_by('-product__product_name')
 
     # Render the template with the sorted variants
-    html = render_to_string("user_panel/index.html", {'variant': variants})
+    html = render_to_string("user_panel/index.html", {'variant': variants,'new_variant':new_variant})
     return JsonResponse({'html': html})
 
 
-# @login_required(login_url='login')
-def product_details(request,id):
+
+
+
+@check_blocked
+def product_details(request, id):
     if 'email' not in request.session:
         return redirect('user:login')
-    product_variant=Product_Variant.objects.filter(pk=id)
-    context={
-        "variant":product_variant
+
+    # Check if the user is blocked
+    user = Customers.objects.get(email=request.session['email'])
+    if user.is_blocked:
+        messages.error(request, "You are blocked. Please contact support for assistance.")
+        return redirect('user:login')  # Replace 'blocked_page' with the appropriate URL name or path
+    
+    # Filter active brands
+    brands = Brand.objects.filter(is_active=True)
+    
+    # Retrieve product variant and pass it to the template context
+    product_variant = Product_Variant.objects.filter(pk=id) 
+    context = {
+        "variant": product_variant,
+        "brands": brands,  # Corrected variable name
+       
     }
-    return render(request,"user_panel/product_details.html",context)
+    return render(request, "user_panel/product_details.html", context)
+
+
+
 
 
 
 # user side-------------------------------------------------------------------
 
 
+@check_blocked
 def user_profile(request):
     if 'email' not in request.session:
         return redirect('user:login')
@@ -362,6 +407,7 @@ def user_profile(request):
         return redirect('user:login')
 
 
+@check_blocked
 def add_address1(request):
     if 'email' not in request.session:
         return redirect('user:login')
@@ -462,6 +508,8 @@ def validate_address(address):
     # Check if address contains only letters and numbers
     return bool(re.match('^[a-zA-Z0-9\s]+$', address.strip()))
 
+
+@check_blocked
 def delete_address(request):
     if 'email' not in request.session:
         return redirect('user:login')
@@ -482,6 +530,9 @@ def delete_address(request):
     return redirect('user:user_profile')
 
 
+
+
+@check_blocked
 def add_address2(request):
     if 'email' not in request.session:
         return redirect('user:login')
@@ -559,6 +610,8 @@ def add_address2(request):
   # Added missing context
 
 
+@login_required(login_url='user:login')
+@check_blocked
 def delete_address2(request):
 
     if 'email' not in request.session:
@@ -580,8 +633,9 @@ def delete_address2(request):
     return redirect('user:user_profile')
 
 
-from django.contrib.auth.hashers import check_password
 
+
+@check_blocked
 def change_pass(request):
 
     if request.method == 'POST':

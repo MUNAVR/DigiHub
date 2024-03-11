@@ -15,6 +15,7 @@ urlpatterns = [
     path('verify_otp',views.verify_otp,name="verify_otp"),
     path('resend_otp',views.resend_otp,name="otp"),
     path('product_details/<id>',views.product_details,name="product_details"),
+    
 
 
     path('user-profile',views.user_profile,name="user_profile"),
@@ -23,4 +24,6 @@ urlpatterns = [
     path('delete_address/', views.delete_address, name='delete_address'),
     path('delete_address2/', views.delete_address2, name='delete_address2'),
     path('change_pass',views.change_pass,name="change_pass"),
+
+    
 ]

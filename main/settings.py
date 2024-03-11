@@ -45,12 +45,15 @@ INSTALLED_APPS = [
     'category',
     'cart',
     'checkout',
+    'wishlist',
+    'offers',
 
     'django.contrib.sites',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
+    'corsheaders',
 
 ]
 
@@ -63,6 +66,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'allauth.account.middleware.AccountMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 
 ]
 
@@ -190,3 +194,9 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'munavarmjp@gmail.com'
 EMAIL_HOST_PASSWORD = 'bcnz owta nucw wwqw'
+
+
+
+#  CORS (Cross-Origin Resource Sharing) configuration.
+CSRF_TRUSTED_ORIGINS = ['https://*.mydomain.com','https://*.127.0.0.1']
+

@@ -1,0 +1,66 @@
+{% extends 'admin_panel/base.html' %}
+{% load static %}
+
+{% block title %}offer{% endblock %}
+
+{% block content %}
+        <section class="content-main">
+            <div class="content-header">
+                <h2 class="content-title">Referral  offers list</h2>
+                <div>
+                    <a href="{%  url 'create_offer' %}" class="btn btn-primary"><i class="material-icons md-plus"></i> Create new</a>
+                </div>
+            </div>
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}" role="alert">
+                {{ message }}
+            </div>
+            {% endfor %}
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                
+                                    <th>referral by</th>
+                                    <th>referral code</th>
+                                    <th>Dicount</th>
+                                    <th>Maximum amount</th>
+                                    <th>Minimum amou    nt</th>
+                                    <th>Last date</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for offer in offers %}
+                                <tr>
+                                    <td>{{ offer.referred_by }}</td>
+                                    <td>{{ offer.referral_code }}</td>>
+                                    <td>{{ offer.discount_percentage }}%</td>
+                                    <td>{{ offer.maximum_discountAmount }}</td>
+                                    <td>{{ offer.minimum_discountAmount }}</td>
+                                    <td>{{ offer.valid_to }}</td>
+                                    {% comment %} <td>
+                                        {% if offer.is_published %}
+                                            <form action="{% url 'unpublish_offer' offer.id %}" method="post" style="display: inline;">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-warning">Unpublish</button>
+                                            </form>
+                                        {% else %}
+                                            <form action="{% url 'publish_offer' offer.id %}" method="post" style="display: inline;">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-success">Publish</button>
+                                            </form>
+                                        {% endif %}
+                                    </td> {% endcomment %}
+                                    
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table> <!-- table-responsive.// -->
+                    </div>
+                </div> <!-- card-body end// -->
+            </div> <!-- card end// -->
+        </section> <!-- content-main end// -->
+    {% endblock %}

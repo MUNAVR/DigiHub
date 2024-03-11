@@ -11,3 +11,4 @@ class Cart(models.Model):
 class CartItems(models.Model):
     user_id=models.ForeignKey(Customers,on_delete=models.CASCADE)
     cart=models.ForeignKey(Cart,on_delete=models.CASCADE)
+

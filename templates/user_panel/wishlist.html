@@ -1,0 +1,77 @@
+{% extends 'user_panel/base.html' %}
+{% load static %}
+
+{% block title %}your wishlist{% endblock %}
+
+{% block content %}
+    <main class="main">
+        <div class="page-header breadcrumb-wrap">
+            <div class="container">
+                <div class="breadcrumb">
+                    <a href="{% url 'user:index' %}" rel="nofollow">Home</a>
+                    <span></span> Shop
+                    <span></span> Wishlist
+                </div>
+            </div>
+        </div>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12">
+                    {% for message in messages %}
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        <section class="mt-50 mb-50">
+            <div class="container">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="table-responsive">
+                            <table class="table shopping-summery text-center">
+                                <thead>
+                                    <tr class="main-heading">
+                                        <th scope="col" colspan="2">Product</th>
+                                        <th scope="col">Price</th>
+                                        <th scope="col">Stock Status</th>
+                                        <th scope="col">Action</th>
+                                        <th scope="col">Remove</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% if wishlist.products.all %}
+                                        {% for product in wishlist.products.all %}
+                                        <tr>
+                                            <td class="image product-thumbnail"><img src="{{ product.thumbnail_image.url }}" alt="#"></td>
+                                            <td class="product-des product-name">
+                                                <h5 class="product-name"><a href="#">{{ product.product.product_name }}</a></h5>
+                                                <p class="font-xs">{{ product.product.product_brand.name }}</p>
+                                            </td>
+                                            <td class="price" data-title="Price"><span>{{ product.sale_price }}</span></td>
+                                            <td class="text-center" data-title="Stock">
+                                                <span class="color3 font-weight-bold">{{ product.stock }}</span>
+                                            </td>
+                                            <td class="text-right" data-title="Cart">
+                                                <a aria-label="Now" class="action-btn" href="{% url 'add_cart' product.id %}"><i class="fi-rs-shopping-bag-add"></i>Add to Cart</a>
+                                            </td>
+                                            <td class="action" data-title="Remove"><a href="{% url 'remove_wishlist' product.id %}"><i class="fi-rs-trash"></i></a></td>
+                                        </tr>
+                                        {% endfor %}
+                                    {% else %}
+                                        <tr>
+                                            <td class="empty-wishlist" colspan="6">Your wishlist is empty.</td>
+                                        </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+              
+    </main>
+    {% endblock %}

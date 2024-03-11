@@ -5,10 +5,15 @@ from products.models import Product_Variant
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.contrib import messages
+from app_1.decorators import check_blocked
+from django.shortcuts import redirect, get_object_or_404
+
+from wishlist.models import Wishlist
 
 
 # Create your views here.       
 
+@check_blocked
 def shop_cart(request):
     if 'email' not in request.session:
         return redirect('user:login')  # Redirect to login page if not logged in
@@ -28,19 +33,20 @@ def shop_cart(request):
     return render(request, "user_panel/shop_cart.html", context)
 
 
-
-def add_cart(request,variant_id):
+@check_blocked
+def add_cart(request, variant_id):
     # Check if 'email' key exists in the session
     if 'email' not in request.session:
         return redirect('user:login') 
 
-    
     email = request.session['email']
     user = Customers.objects.get(email=email)
 
     # Get product variant object based on variant_id
-    product = Product_Variant.objects.get(pk=variant_id)
+    product = get_object_or_404(Product_Variant, pk=variant_id)
 
+    selected_rom = request.POST.get('selected_rom')
+    
     # Create or get cart item for the user and product
     cart_item, created = Cart.objects.get_or_create(user_id=user, product_variant=product)
 
@@ -49,8 +55,21 @@ def add_cart(request,variant_id):
         cart_item.quantity += 1
         cart_item.save()
 
+    # Remove the product from the wishlist
+    try:
+        wishlist = Wishlist.objects.get(user=user)
+        wishlist.products.remove(product)
+    except Wishlist.DoesNotExist:
+        pass
+
+    # Add success message
+    messages.success(request, f" added to your cart.")
+
     # Return success response
     return redirect('user:index')
+
+
+
 
 
 

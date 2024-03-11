@@ -1,0 +1,98 @@
+{% extends 'user_panel/base.html' %}
+{% load static %}
+
+{% block title %}all orders{% endblock %}
+
+{% block content %}
+        <div class="page-header breadcrumb-wrap">
+            <div class="container">
+                <div class="breadcrumb">
+                    <a href="{% url 'user:index' %}" rel="nofollow">Home</a>
+                    <span></span> profile
+                    <span></span> order list
+                    
+                </div>
+            </div>
+        </div>
+        <section class="content-main">
+            <center>
+                <div class="content-header">
+                    <div>
+                        <h2 class="content-title card-title">Order List </h2>
+                    </div>
+                </div>
+            </center>
+            {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}
+                    {% if message.tags == 'success' %}
+                        <li class="success-message">{{ message }}</li>
+                    {% elif message.tags == 'error' %}
+                        <li class="error-message">{{ message }}</li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+            {% endif %}
+            <div class="card mb-4">
+                <header class="card-header">
+                </header> <!-- card-header end// -->
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>#ID</th>
+                                    <th scope="col">Date</th>
+                                    <th scope="col">Total Amount</th>
+                                    <th scope="col">Payment Status</th>
+                                    <th scope="col">Payment Method</th>
+                                    <th scope="col">Order Status</th>
+                                    <th scope="col">
+                                        <center>
+                                            Action 
+                                        </center>   
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for order in order %}
+                                <tr>
+                                    
+                                    <td>{{order.id}}</td>
+                                    <td><b>{{order.order_date}}</b></td>
+                                    <td>{{order.total_amount}}</td>
+                                    <td><span class="badge rounded-pill alert-warning">{{order.payment_status}}</span></td>
+                                    <td>{{order.payment_method}}</td>
+                                    <td>{{order.order_status}}</td>
+                                    <td>
+                                        <center>
+                                            <a href="{% url 'order_details' order.id %}" class="btn btn-md rounded font-sm">Details</a>
+
+                                            <a href="{% url 'cancel_order' order.id %}" id="cancel-button"  class="btn btn-md rounded font-sm">Cancel</a>
+                                        </center>
+                                        </div> <!-- dropdown //end -->
+                                    </td>
+                                    
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div> <!-- table-responsive //end -->
+                </div> <!-- card-body end// -->
+            </div> <!-- card end// -->
+            {% comment %} <div class="pagination-area mt-15 mb-50">
+                <nav aria-label="Page navigation example">
+                    <ul class="pagination justify-content-start">
+                        <li class="page-item active"><a class="page-link" href="#">01</a></li>
+                        <li class="page-item"><a class="page-link" href="#">02</a></li>
+                        <li class="page-item"><a class="page-link" href="#">03</a></li>
+                        <li class="page-item"><a class="page-link dot" href="#">...</a></li>
+                        <li class="page-item"><a class="page-link" href="#">16</a></li>
+                        <li class="page-item"><a class="page-link" href="#"><i class="material-icons md-chevron_right"></i></a></li>
+                    </ul>
+                </nav>
+            </div> {% endcomment %}
+        </section> <!-- content-main end// -->
+        {% endblock %}
+    
+    
