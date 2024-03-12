@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Razorpay Payment</title>
+</head>
+<body>
+    <h1>Razorpay Payment</h1>
+    <!-- Display Razorpay payment form -->
+    <form action="{% url 'success_cash' %}" method="POST">
+        {% csrf_token %}
+        <script src="https://checkout.razorpay.com/v1/checkout.js"
+                data-key="{{ payment_details.key }}"
+                data-amount="{{ payment_details.amount }}"
+                data-currency="{{ payment_details.currency }}"
+                data-order_id="{{ payment_details.id }}"
+                data-buttontext="Pay with Razorpay"
+                data-name="DigiHub"
+                data-description="Purchase Description"
+                data-image="https://example.com/your_logo.jpg"
+                data-prefill.name="Munavar"
+                data-prefill.email="{{payment_details.email}}"
+                data-theme.color="#F37254">
+                
+        </script>
+        <input type="hidden" name="email" value="{{payment_details.email}}">
+        <input type="hidden" name="amount" value="{{payment_details.amount}}">
+        <input type="hidden" custom="Hidden Element" name="hidden">
+    </form>
+</body>
+</html>

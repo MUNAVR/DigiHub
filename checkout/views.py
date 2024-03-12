@@ -14,6 +14,7 @@ from django.db.models import Sum
 from decimal import Decimal
 from django.views.decorators.csrf import csrf_exempt
 import uuid
+from wallet.models import Wallet,Transaction
 
 
 
@@ -155,6 +156,54 @@ def handle_razorpay_failure(request):
     return redirect('user_panel:checkout_page')
 
 
+from django.db import transaction
+
+@transaction.atomic
+def wallet_payment(request):
+    email = request.session.get('email')
+    user = Customers.objects.get(email=email)
+    
+    # Check if the user has a wallet
+    try:
+        wallet = Wallet.objects.get(user=user)
+    except Wallet.DoesNotExist:
+        messages.error(request, "You don't have a wallet. Please add funds to your wallet first.")
+        return redirect('wallet')  # Redirect to the wallet page
+
+    # Calculate total amount for the order
+    cart_items = Cart.objects.filter(user_id=user)
+    subtotal = sum(cart_item.product_variant.sale_price * cart_item.quantity for cart_item in cart_items)
+    shipping_charge = 100
+    total = subtotal + shipping_charge
+    
+    # Check if the wallet balance is sufficient for the order
+    if wallet.balance < total:
+        messages.error(request, "Insufficient funds in your wallet. Please add funds to your wallet.")
+        return redirect('wallet')  # Redirect to the wallet page
+    
+    # Proceed with creating the order
+    order = Order(user=user, total_amount=total, payment_method="wallet", payment_status="paid")
+    order.save()
+
+    # Deduct payment amount from the wallet balance and create a transaction record
+    wallet.balance -= total
+    wallet.save()
+    transaction = Transaction.objects.create(wallet=wallet, amount=total, transaction_type="Debit")
+
+    # Fetch order details
+    od = Order.objects.filter(user=user).order_by('-order_date').first()
+    addrss = Address1.objects.get(user=user)
+
+    context = {
+        "total_amount": total,
+        "order": od,
+        "add": addrss,
+        "transaction": transaction  # Pass transaction details to the template
+    }
+    return render(request, "user_panel/order_succes.html", context)
+
+
+
 
 
 def all_orders (request):
@@ -212,6 +261,4 @@ def cancel_order(request, order_id):
 
     return redirect('all_orders')
   # Redirect to order details page
-
-
 

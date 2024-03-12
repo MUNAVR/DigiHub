@@ -218,4 +218,18 @@
         });
         
     </script>
+    <script>
+        // Close the modal when the close button is clicked
+        $(".close").on("click", function() {
+            $("#myModal").css("display", "none");
+        });
+    
+        // Close the modal when the user clicks anywhere outside of the modal
+        window.onclick = function(event) {
+            var modal = document.getElementById('myModal');
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        };
+    </script>
     {% endblock %}

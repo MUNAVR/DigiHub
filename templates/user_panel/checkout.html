@@ -4,6 +4,31 @@
 {% block title %}checkout{% endblock %}
 
 {% block content %}
+<style>
+    .popup {
+        display: block;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+    }
+    
+    .popup-content {
+        background-color: #fefefe;
+        padding: 20px;
+        border-radius: 5px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    }
+    
+    .close {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        cursor: pointer;
+    }    
+</style>
     <main class="main">
         <div class="page-header breadcrumb-wrap">
             <div class="container">
@@ -15,6 +40,14 @@
                 </div>
             </div>
         </div>
+        {% if insufficient_funds %}
+            <div id="popup" class="popup">
+                <div class="popup-content">
+                    <span class="close" onclick="closePopup()">&times;</span>
+                    <p>{{ messages }}</p>
+                </div>
+            </div>
+        {% endif %}
         <section class="mt-50 mb-50">
             <div class="container">
                 <div class="row">
@@ -202,7 +235,12 @@
                                         <input class="form-check-input" required="" type="radio" name="payment_option" id="razorpay" value="razorpay">
                                         <label class="form-check-label" for="razorpay">Razorpay</label>
                                     </div>
+                                    <div class="custome-radio">
+                                        <input class="form-check-input" required="" type="radio" name="payment_option" id="wallet" value="wallet">
+                                        <label class="form-check-label" for="wallet">Wallet</label>
+                                    </div>
                                 </div>
+                                
                             </div>
                             <button type="button" class="btn btn-fill-out btn-block mt-30" id="place_order_button">Place Order</button>
                         </div>
@@ -217,14 +255,23 @@
             if (selectedPaymentOption === 'razorpay') {
                 // Redirect to Razorpay payment page
                 window.location.href = "{% url 'razorpay_payment' %}";
-            } else {
+            } else if (selectedPaymentOption === 'cash_on_delivery') {
                 // Proceed with other payment methods (in this case, Cash on Delivery)
                 // Submit the form to the place_order URL
                 document.querySelector('form').action = "{% url 'place_order' %}";
                 document.querySelector('form').submit();
+            } else {
+                // For other payment options (e.g., wallet payment)
+                // Submit the form to the appropriate URL
+                document.querySelector('form').action = "{% url 'wallat_payment' %}";
+                document.querySelector('form').submit();
             }
         });
+        function closePopup() {
+            document.getElementById("popup").style.display = "none";
+        }
     </script>
+    
         
     
         

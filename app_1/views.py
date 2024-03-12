@@ -610,7 +610,7 @@ def add_address2(request):
   # Added missing context
 
 
-@login_required(login_url='user:login')
+
 @check_blocked
 def delete_address2(request):
 

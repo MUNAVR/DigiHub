@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'checkout',
     'wishlist',
     'offers',
+    'wallet',
 
     'django.contrib.sites',
     'allauth',
