@@ -6,6 +6,9 @@ from django.shortcuts import render, redirect, get_object_or_404
 from products.models import Product_Variant
 from app_1.decorators import check_blocked
 from django.contrib import messages
+from offers.models import ProductOffer
+from datetime import date
+
 # Create your views here.
 
 
@@ -54,6 +57,8 @@ def remove_from_wishlist(request, product_id):
     
     return redirect('wishlist')
 
+
+
 @check_blocked
 def wishlist(request):
     if 'email' not in request.session:
@@ -68,5 +73,35 @@ def wishlist(request):
     except Wishlist.DoesNotExist:
         messages.error(request, "Wishlist not found.")
         return redirect('user:index')
+    
+    for product_variant in wishlist.products.all():
+        apply_product_offers(product_variant)
 
-    return render(request, 'user_panel/wishlist.html', {'wishlist': wishlist})
+    # Pass the wishlist items to the template along with offer prices
+    wishlist_items = [{
+        'product': item,
+        'offer_price': item.sale_price,  # Use the sale price after applying offers
+    } for item in wishlist.products.all()]
+
+    return render(request, 'user_panel/wishlist.html', {'wishlist_items': wishlist_items})
+
+def apply_product_offers(product_variant):
+    # Get active offers for this product variant
+    active_offers = ProductOffer.objects.filter(
+        product=product_variant.product,
+        valid_from__lte=date.today(),
+        valid_to__gte=date.today()
+    )
+
+    # Apply the maximum discount from all offers
+    max_discount = 0
+    for offer in active_offers:
+        if offer.discount_percentage > max_discount:
+            max_discount = offer.discount_percentage
+    
+    # Update sale price if there's an offer
+    if max_discount > 0:
+        product_variant.sale_price -= (product_variant.sale_price * max_discount / 100)
+        print()
+
+

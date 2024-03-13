@@ -22,6 +22,8 @@ from app_1.decorators import check_blocked
 from django.contrib.auth.decorators import login_required
 from category.models import Brand
 from django.db.models import F, Max, Min
+from offers.models import ProductOffer
+from datetime import date
 
 
 def google_oauth_callback(request):
@@ -261,6 +263,7 @@ def index(request):
         product__is_active=True,
         product__product_category__is_active=True,
         product__product_brand__is_active=True,
+        is_active=True  # Add condition to check if the variant itself is active
     ).select_related('product', 'product__product_category', 'product__product_brand')
 
     # Filter variants further to include only those with all active attributes
@@ -268,6 +271,24 @@ def index(request):
     for variant in variants:
         if all(attribute.is_active for attribute in variant.attributes.all()):
             active_variants.append(variant)
+
+    # Apply offers to variants
+    for variant in active_variants:
+        # Get active offers for this product
+        active_offers = ProductOffer.objects.filter(
+            product=variant.product,
+            valid_from__lte=date.today(),
+            valid_to__gte=date.today()
+        )
+        # Apply the maximum discount from all offers
+        max_discount = 0
+        for offer in active_offers:
+            if offer.discount_percentage > max_discount:
+                max_discount = offer.discount_percentage
+        
+        # Update sale price if there's an offer
+        if max_discount > 0:
+            variant.sale_price -= (variant.sale_price * max_discount / 100)
 
     # Order the active variants by sale price
     active_variants = sorted(active_variants, key=lambda x: x.sale_price, reverse=True)
@@ -282,6 +303,8 @@ def index(request):
     }
 
     return render(request, "user_panel/index.html", context)
+
+
 
 
 
@@ -330,10 +353,28 @@ def product_details(request, id):
     
     # Retrieve product variant and pass it to the template context
     product_variant = Product_Variant.objects.filter(pk=id) 
+    
+    # Apply offers to the product variant
+    for variant in product_variant:
+        # Get active offers for this product
+        active_offers = ProductOffer.objects.filter(
+            product=variant.product,
+            valid_from__lte=date.today(),
+            valid_to__gte=date.today()
+        )
+        # Apply the maximum discount from all offers
+        max_discount = 0
+        for offer in active_offers:
+            if offer.discount_percentage > max_discount:
+                max_discount = offer.discount_percentage
+        
+        # Update sale price if there's an offer
+        if max_discount > 0:
+            variant.sale_price -= (variant.sale_price * max_discount / 100)
+    
     context = {
         "variant": product_variant,
-        "brands": brands,  # Corrected variable name
-       
+        "brands": brands,
     }
     return render(request, "user_panel/product_details.html", context)
 

@@ -129,13 +129,24 @@ def create_offer(request):
     }
     return render(request, 'admin_panel/create_offer.html', context)
 
-
 def product_offer_list(request):
     offers=ProductOffer.objects.all()
     context={
         "offers":offers
     }
     return render(request,"admin_panel/product_offer_list.html",context)
+
+def status_product(request,id):
+    try:
+        offer = ProductOffer.objects.get(id=id)
+        # Toggle the is_active status
+        offer.is_active = not offer.is_active
+        offer.save()
+        # Redirect back to the product offer list page
+        return redirect('product_offer_list')
+    except ProductOffer.DoesNotExist:
+        # Handle the case where the offer with the given ID does not exist
+        return HttpResponse("Offer not found.")    
 
 def referral_offer_list(request):
     offers= ReferralOffer.objects.all()
@@ -150,8 +161,6 @@ def brand_offer_list(request):
         "offers":offers
     }
     return render(request,"admin_panel/brand_offer_list.html",context)
-
-
 
 def get_offers(request):
     product_offers = ProductOffer.objects.all()

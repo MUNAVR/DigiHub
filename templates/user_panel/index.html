@@ -68,9 +68,9 @@
                                             <span class="old-price"> ₹ {{variant.max_price}}</span>
                                         </div>
                                         {% for offer in variant.product.productoffer_set.all %}
-                                            {% if offer.is_active %}
+                                            {% if offer.is_active == True %}
                                                 <div class="offer-info">
-                                                    Offer: {{ offer.discount_percentage }}% off ({{ offer.valid_from|date:"Y-m-d" }} to {{ offer.valid_to|date:"Y-m-d" }})
+                                                    Offer: {{ offer.discount_percentage }}% off &nbsp&nbsp( To {{ offer.valid_to|date:"Y-m-d" }})
                                                 </div>
                                             {% endif %}
                                         {% endfor %}

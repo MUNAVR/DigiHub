@@ -3,6 +3,7 @@ from app_1.models import Customers
 from products.models import Products, Product_Variant
 from category.models import Brand
 from django.utils.crypto import get_random_string
+from django.utils import timezone
 # Create your models here.
 
 
@@ -22,7 +23,11 @@ class BaseOffer(models.Model):
     def save(self, *args, **kwargs):
         if not self.offer_code:
             self.offer_code = get_random_string(length=10)
-        super().save(*args, **kwargs)
+        # Check if the offer has expired before saving
+        if self.valid_to < timezone.now().date():
+            self.delete()  # Delete the offer if it has expired
+        else:
+            super().save(*args, **kwargs)
 
     def __str__(self):
         return self.offer_code

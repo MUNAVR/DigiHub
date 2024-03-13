@@ -6,6 +6,8 @@ urlpatterns =[
     path('brand_offer_list',views.brand_offer_list,name="brand_offer_list"),
     path('referral_offer_list',views.referral_offer_list,name="referral_offer_list"),
     path("create_offer",views.create_offer,name="create_offer"),
+    path('change_active/<id>',views.status_product,name='change_active'),
+
 
     path('get_offers/', views.get_offers, name='get_offers'),
 ] 

@@ -65,9 +65,16 @@
                                             <div class="product-price primary-color float-left">
                                                 <ins><span class="text-brand" id="product-price" > ₹ {{variant.sale_price}}</span></ins>
                                                 <ins><span class="old-price font-md ml-15"> ₹ {{variant.max_price}}</span></ins>
-                                                <span class="save-price  font-md color3 ml-15">25% Off</span>
+                                                {% comment %} <span class="save-price  font-md color3 ml-15">25% Off</span> {% endcomment %}
                                             </div>
                                         </div>
+                                        {% for offer in variant.product.productoffer_set.all %}
+                                            {% if offer.is_active %}
+                                                <div class="offer-info">
+                                                    Offer: {{ offer.discount_percentage }}% off  &nbsp&nbsp&nbsp&nbsp ( To {{ offer.valid_to|date:"Y-m-d" }})
+                                                </div>
+                                            {% endif %}
+                                        {% endfor %}
                                         <div class="bt-1 border-color-1 mt-15 mb-15"></div>
                                         <div class="product_sort_info font-xs mb-30">
                                             <ul>
