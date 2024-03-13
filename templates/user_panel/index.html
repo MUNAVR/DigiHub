@@ -59,13 +59,21 @@
                                         <h2><a href="product_details/{{variant.id}}">{{variant.product.product_name}}</a></h2>
                                         <div class="rating-result" title="90%">
                                             <span>
-                                                <span>90%</span>
+                                                <span>4.5</span>
                                             </span>
                                         </div>
+
                                         <div class="product-price">
                                             <span> ₹ {{variant.sale_price}}</span>
                                             <span class="old-price"> ₹ {{variant.max_price}}</span>
                                         </div>
+                                        {% for offer in variant.product.productoffer_set.all %}
+                                            {% if offer.is_active %}
+                                                <div class="offer-info">
+                                                    Offer: {{ offer.discount_percentage }}% off ({{ offer.valid_from|date:"Y-m-d" }} to {{ offer.valid_to|date:"Y-m-d" }})
+                                                </div>
+                                            {% endif %}
+                                        {% endfor %}
                                         <li class="mb-10"><i class="fi-rs-crown mr-5"></i> {{ attribute_value.attribute_ram }}</li>
                                         {% comment %} <li class="mb-10"><i class="fi-rs-crown mr-5"></i>Color: {{ attribute_value.attribute_color }}</li> {% endcomment %}
                                         <li class="mb-10"><i class="fi-rs-crown mr-5"></i>Camera: {{ variant.product.camera }}</li>

@@ -21,6 +21,7 @@ from django.urls import reverse
 from app_1.decorators import check_blocked
 from django.contrib.auth.decorators import login_required
 from category.models import Brand
+from django.db.models import F, Max, Min
 
 
 def google_oauth_callback(request):
@@ -253,6 +254,7 @@ def logout(request):
     return redirect('user:login')
 
 
+
 def index(request):
     # Get all active product variants with their related products, categories, brands, and attributes
     variants = Product_Variant.objects.filter(
@@ -280,8 +282,6 @@ def index(request):
     }
 
     return render(request, "user_panel/index.html", context)
-
-
 
 
 

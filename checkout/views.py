@@ -240,25 +240,44 @@ def order_details(request, id):
     return render(request, "user_panel/order_details.html", context)
 
 
-from django.contrib import messages
 
 def cancel_order(request, order_id):
     try:
         order = Order.objects.get(id=order_id)
-        
-        # Check if the order is cancellable (add any conditions here)
+        print(order)
+        # Check if the order is cancellable
         if order.order_status == 'Cancelled':
             messages.error(request, 'Order has already been cancelled.')
         elif order.order_status == 'Pending' and order.payment_status == 'Pending':
             # Update order status to 'Cancelled'
             order.order_status = 'Cancelled'
             order.save()
-            messages.success(request, 'Order has been cancelled successfully.')
+
+            # Refund the amount based on payment method
+        elif order.payment_method == 'Online' or order.payment_method == 'wallet':
+                refund_to_wallet(request, order)
         else:
             messages.error(request, 'Order cannot be cancelled at this time.')
     except Order.DoesNotExist:
         messages.error(request, 'Order not found.')
 
     return redirect('all_orders')
+
+def refund_to_wallet(request, order):
+    try:
+        wallet = Wallet.objects.get(user=order.user)
+        transaction = Transaction.objects.create(
+            wallet=wallet,
+            amount=order.total_amount,
+            transaction_type='Credit',
+        )
+        wallet.balance += order.total_amount
+        wallet.save()
+        transaction.save()
+        messages.success(request, 'Order has been cancelled successfully. Amount refunded to wallet.')
+    except Wallet.DoesNotExist:
+        messages.error(request, 'Wallet not found for the user.')
+
+
   # Redirect to order details page
 

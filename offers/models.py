@@ -11,16 +11,17 @@ class BaseOffer(models.Model):
     class Meta:
         abstract = True
 
-    offer_code = models.CharField(max_length = 10, unique = True, editable = False)
-    discount_percentage = models.DecimalField(max_digits = 10, decimal_places = 2)
-    maximum_discountAmount = models.DecimalField(max_digits = 10, decimal_places = 2)
-    minimum_discountAmount = models.DecimalField(max_digits = 10, decimal_places = 2)
+    offer_code = models.CharField(max_length=10, unique=True, editable=False)
+    discount_percentage = models.DecimalField(max_digits=10, decimal_places=2)
+    maximum_discountAmount = models.DecimalField(max_digits=10, decimal_places=2)
+    minimum_discountAmount = models.DecimalField(max_digits=10, decimal_places=2)
     valid_from = models.DateField(auto_now_add=True)
     valid_to = models.DateField()
+    is_active = models.BooleanField(default=True)  # New field added
 
     def save(self, *args, **kwargs):
         if not self.offer_code:
-            self.offer_code = get_random_string(length = 10)
+            self.offer_code = get_random_string(length=10)
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -32,8 +33,7 @@ class ReferralOffer(BaseOffer):
         db_table = "Referral_Offer"
         managed = True
 
-    
-    referral_code = models.CharField(max_length = 10, unique = True)
+    referral_code = models.CharField(max_length=10, unique=True)
     referred_by = models.ForeignKey(Customers, related_name='referrals', on_delete=models.SET_NULL, null=True)
 
 
@@ -46,8 +46,9 @@ class ProductOffer(BaseOffer):
 
 
 class BrandOffer(BaseOffer):
-    class Meta: 
+    class Meta:
         db_table = "Brand_Offer"
         managed = True
 
     brand = models.ForeignKey(Brand, on_delete=models.CASCADE)
+
