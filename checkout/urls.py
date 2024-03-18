@@ -3,6 +3,9 @@ from checkout import views
 
 urlpatterns = [
     path('checkout_page',views.checkout_page,name='checkout_page'), 
+    path('apply_coupon', views.apply_coupon, name='apply_coupon'),
+
+
     path('place_order',views.place_order,name="place_order"),
 
     path('razorpay_payment',views.razorpay_payment,name='razorpay_payment'),

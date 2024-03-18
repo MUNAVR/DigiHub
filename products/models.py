@@ -29,7 +29,7 @@ class Products(models.Model):
     display = models.CharField(max_length=10,default='Unknown')
     battery = models.CharField(max_length=8,default='Unknown')
     processor = models.CharField(max_length=20,default='Unknown')
-    
+    offer=models.DecimalField(max_digits=5, decimal_places=2,null=True)
 
 
 

@@ -107,83 +107,30 @@
     <h1>Create Offer</h1>
     {% if error_messages %}
         <div class="alert alert-danger" role="alert">
-                <ul>
-                    {% for message in error_messages %}
-                        <li>{{ message }}</li>
-                    {% endfor %}
-                </ul>
+            <ul>
+                {% for message in error_messages %}
+                    <li>{{ message }}</li>
+                {% endfor %}
+            </ul>
         </div>
     {% endif %}
-    <form action="{% url 'create_offer' %}" method="post">
-        {% csrf_token %}
-        <label for="offer_type">Offer Type:</label>
-        <select name="offer_type" id="offer_type">
-            <option value="referral">Referral Offer</option>
-            <option value="product">Product Offer</option>
-            <option value="brand">Brand Offer</option>
-        </select>
-        <br><br>
-        <label for="discount_percentage">Discount Percentage:</label>
-        <input type="text" name="discount_percentage" id="discount_percentage" required>
-        <br><br>
-        <label for="maximum_discount_amount">Maximum Discount Amount:</label>
-        <input type="text" name="maximum_discount_amount" id="maximum_discount_amount" required>
-        <br><br>
-        <label for="minimum_discount_amount">Minimum Discount Amount:</label>
-        <input type="text" name="minimum_discount_amount" id="minimum_discount_amount" required>
+    <form action="{% url 'create_offer' %}" method="POST">
+        {% csrf_token %}        
+        <label for="amount">Referral Amount:</label>
+        <input type="number" name="amount" id="amount" required>
         <br><br>
         <label for="valid_to">Valid To:</label>
         <input type="date" name="valid_to" id="valid_to" required>
         <br><br>
-
-        <!-- Additional fields based on offer type -->
-        <div id="extra_fields"></div>
-
-        <!-- Offer code -->
-
+        <label for="referred_by">Referred By:</label>
+        <select name="referred_by" id="referred_by" required>
+            <option value="">Select Referred By</option>
+            <!-- Iterate over users in your database -->
+            {% for user in user %}
+                <option value="{{ user.id }}">{{ user.first_name }}</option>
+            {% endfor %}
+        </select>
         <input type="submit" value="Create Offer">
     </form>
-    <script>
-        document.getElementById("offer_type").addEventListener("change", function() {
-            var offerType = this.value;
-            var extraFields = document.getElementById("extra_fields");
-            extraFields.innerHTML = "";
-
-            if (offerType === "product") {
-                extraFields.innerHTML += `
-                <select name="product_name" id="product_name" required>
-                    <option value="">Select a product</option>
-                    {% for product in product %}
-                    <option value="{{ product.id }}">{{ product.product_name }}</option>
-                    {% endfor %}
-                </select>
-                `;
-            } else if (offerType === "brand") {
-                extraFields.innerHTML += `
-                <select name="brand_name" id="brand_name" required>
-                    <option value="">Select a brand</option>
-                    {% for brand in brand %}
-                    <option value="{{ brand.id }}">{{ brand.name }}</option>
-                    {% endfor %}
-                </select>
-                `;
-            } else if (offerType === "referral") {
-                extraFields.innerHTML += `
-                    <label for="referral_code">Referral Code:</label>
-                    <input type="text" name="referral_code" id="referral_code" required>
-                    <br><br>
-                    <label for="referred_by">Referred By:</label>
-                    <select name="referred_by" id="referred_by" required>
-                        <option value="">Select Referred By</option>
-                        <!-- Iterate over users in your database -->
-                        {% for user in customers %}
-                            <option value="{{ user.id }}">{{ user.first_name }}</option>
-                        {% endfor %}
-                    </select>
-                    <br><br>
-                `;
-            }
-        });
-    </script>
 </body>
 </html>

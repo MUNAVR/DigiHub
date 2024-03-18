@@ -65,31 +65,28 @@
                                             <div class="product-price primary-color float-left">
                                                 <ins><span class="text-brand" id="product-price" > ₹ {{variant.sale_price}}</span></ins>
                                                 <ins><span class="old-price font-md ml-15"> ₹ {{variant.max_price}}</span></ins>
-                                                {% comment %} <span class="save-price  font-md color3 ml-15">25% Off</span> {% endcomment %}
+                                                {% if variant.product.offer %}
+                                                <span class="offer offer-discount"> &nbsp&nbsp&nbsp&nbsp&nbsp{{ variant.product.offer }}% off</span><br>
+                                                {% endif %}  
                                             </div>
                                         </div>
-                                        {% for offer in variant.product.productoffer_set.all %}
-                                            {% if offer.is_active %}
-                                                <div class="offer-info">
-                                                    Offer: {{ offer.discount_percentage }}% off  &nbsp&nbsp&nbsp&nbsp ( To {{ offer.valid_to|date:"Y-m-d" }})
-                                                </div>
-                                            {% endif %}
-                                        {% endfor %}
                                         <div class="bt-1 border-color-1 mt-15 mb-15"></div>
                                         <div class="product_sort_info font-xs mb-30">
                                             <ul>
                                                 <li class="mb-10"><i class="fi-rs-crown mr-5"></i> RAM: {{ attribute_value.attribute_ram }}</li>
-                                                <li class="mb-10"><i class="fi-rs-crown mr-5" id="product-rom"></i>     RAM:{{variant.rom}}</li>
-                                                <li class="mb-10"><i class="fi-rs-refresh mr-5"></i>DISPLAY: {{ variant.product.display }}</li>
-                                                <li><i class="fi-rs-credit-card mr-5"></i>CAMERA :{{ variant.product.camera }}</li>
-                                                <li><i class="fi-rs-credit-card mr-5"></i>BATTERY :{{variant.product.battery}}</li>
-                                                <li><i class="fi-rs-credit-card mr-5"></i>PROCESSOR: {{variant.product.processor}}</li>
+                                                <li class="mb-10"><i class="fi-rs-crown mr-5" id="product-rom"></i> RAM: {{ variant.rom }}</li>
+                                                <li class="mb-10"><i class="fi-rs-refresh mr-5"></i> DISPLAY: {{ variant.product.display }}</li>
+                                                <li><i class="fi-rs-credit-card mr-5"></i> CAMERA: {{ variant.product.camera }}</li>
+                                                <li><i class="fi-rs-credit-card mr-5"></i> BATTERY: {{ variant.product.battery }}</li>
+                                                <li><i class="fi-rs-credit-card mr-5"></i> PROCESSOR: {{ variant.product.processor }}</li>
+                                                <li style="color: {% if variant.stock <= 1 %}red{% endif %}"><i class="fi-rs-credit-card mr-5"></i> STOCK: {{ variant.stock }}</li>
                                             </ul>
                                         </div>
+                                        
                                         <div class="attr-detail attr-rom mb-15">
                                             <strong class="mr-10">ROM</strong>
                                             <div class="rom-options">
-                                                <div class="rom-option"><a href="#" data-rom="64GB">64GB</a></div>
+                                                
                                                 <div class="rom-option active" ><a href="#" data-rom="128GB">128GB</a></div>
                                                 <div class="rom-option"><a href="#" data-rom="256GB">256GB</a></div>
                                                 <div class="rom-option"><a href="#" data-rom="512GB">512GB</a></div>
@@ -104,17 +101,16 @@
                                             $(document).ready(function() {
                                                 $('.rom-option').click(function(e) {
                                                     e.preventDefault();
-                                                    var selectedROM = $(this).find('a').data('rom');
+                                                    var selectedROM = $(this).find('a').data('rom');    
                                                     var priceElement = $('#product-price');
                                                     var romElement = $('#product-rom');
                                             
                                                     // Update price and ROM elements
                                                     var romPrices = {
-                                                        '64GB': ({{variant.sale_price}} - 10000).toFixed(2),
                                                         '128GB': {{variant.sale_price}}.toFixed(2),
-                                                        '256GB': ({{variant.sale_price}} + 10000).toFixed(2),
-                                                        '512GB': ({{variant.sale_price}} + 17000).toFixed(2),
-                                                        '1TB': ({{variant.sale_price}} + 25000).toFixed(2),
+                                                        '256GB': ({{variant.sale_price}} + 2500).toFixed(2),
+                                                        '512GB': ({{variant.sale_price}} + 4000).toFixed(2),
+                                                        '1TB': ({{variant.sale_price}} + 10000).toFixed(2),
                                                     };
                                             
                                                     priceElement.text('₹' + romPrices[selectedROM]);
@@ -123,18 +119,22 @@
                                                 function addToCart() {
                                                     // Get the selected ROM from the hidden input field
                                                     var selectedROM = $('#product-rom').text();
-                                                
-                                                    // Include the selected ROM in the form data
+                                                    
+                                                    // Get the selected ROM price
+                                                    var selectedROMPrice = $('#product-price').text(); // Assuming the price is displayed in the same element as the ROM
+                                                    
+                                                    // Include the selected ROM and its price in the form data
                                                     var formData = {
                                                         // Include other form data if any
-                                                        selected_rom: selectedROM
+                                                        selected_rom: selectedROM,
+                                                        selected_rom_price: selectedROMPrice
                                                     };
-                                                
+                                                    
                                                     // Send the form data to the server using AJAX or by submitting a form
                                                     // Example using AJAX
                                                     $.ajax({
                                                         type: 'POST',
-                                                        url: '/add_cart/{{ variant.id }}/',  // Adjust the URL to your add to cart endpoint
+                                                        url: '/add_to_cart/',  // Adjust the URL to your add to cart endpoint
                                                         data: formData,
                                                         success: function(response) {
                                                             // Handle success response

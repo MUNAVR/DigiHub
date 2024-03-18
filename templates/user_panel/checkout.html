@@ -159,10 +159,17 @@
                                             <th>Shipping</th>
                                             <td colspan="2"><em>₹ 100</em></td>
                                         </tr>
+                                        <tr id="discountRow" style="display: none;">
+                                            <th>Discount</th>
+                                            <td colspan="2" class="product-subtotal">₹ <span id="discountAmount"></span></td>
+                                        </tr>
                                         <tr>
                                             <th>Total</th>
-                                            <td colspan="2" class="product-subtotal"><span class="font-xl text-brand fw-900">₹ {{ total }}</span></td>
+                                            <td colspan="2" class="product-subtotal">
+                                                <span id="totalAmount" class="font-xl text-brand fw-900">₹ {{ total }}</span>
+                                            </td>
                                         </tr>
+                                       
                                     </tbody>
                                     
                                     
@@ -177,48 +184,98 @@
                                         <div class="panel-body">
                                             <p class="mb-30 font-sm">If you have a coupon code or, please apply it below.</p>
                                             <form method="post" id="couponForm">
+                                                {% csrf_token %}
                                                 <div class="form-group">
-                                                    <input type="text" id="couponInput" placeholder="Enter Coupon Code..." onclick="showOffers()">
+                                                    <input type="text" id="couponInput" placeholder="Click here to enter coupon code..." required>
                                                 </div>
-                                                <div class="form-group">
-                                                    <button type="submit" class="btn btn-md" name="login">Apply Coupon</button>
-                                                </div>
+                                                {% comment %} <div class="form-group">
+                                                    <button type="button" class="btn btn-md">Apply Coupon</button>
+                                                </div> {% endcomment %}
                                             </form>
                                         </div>
                                     </div>
-                                    <!-- Modal -->
-                                    <div class="modal" tabindex="-1" role="dialog" id="offerModal">
+
+                                    <div class="modal fade" id="couponModal" tabindex="-1" role="dialog" aria-labelledby="couponModalLabel" aria-hidden="true">
                                         <div class="modal-dialog" role="document">
                                             <div class="modal-content">
                                                 <div class="modal-header">
-                                                    <h5 class="modal-title">Available Offers</h5>
-                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    <h5 class="modal-title" id="exampleModalLabel">Select Coupon</h5>
+                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                        <span aria-hidden="true">&times;</span>
+                                                    </button>
                                                 </div>
-                                                <div class="modal-body" id="modalBody">
-                                                    <!-- Offer details will be populated here -->
-                                                    <form id="offerForm">
-                                                        <!-- Example offers, replace with dynamically generated offers -->
-                                                        <div class="form-check">
-                                                            <input class="form-check-input" type="checkbox" value="offer1" id="offer1">
-                                                            <label class="form-check-label" for="offer1">
-                                                                Offer 1: 10% Discount
-                                                            </label>
+                                                <div class="modal-body">
+                                                    <form method="post" id="applyCouponForm">
+                                                        {% csrf_token %}
+                                                        <div class="form-group">
+                                                            <select id="selectedCoupon" class="form-control">
+                                                                <option value="">Select a coupon</option>
+                                                                {% for coupon in active_coupons %}
+                                                                    <option value="{{ coupon.id }}">{{ coupon.code }} - {{ coupon.discount }}% off</option>
+                                                                {% endfor %}
+                                                            </select>   
                                                         </div>
-                                                        <div class="form-check">
-                                                            <input class="form-check-input" type="checkbox" value="offer2" id="offer2">
-                                                            <label class="form-check-label" for="offer2">
-                                                                Offer 2: $5 Discount
-                                                            </label>
+                                                        <div class="form-group">
+                                                            <button type="Submit" class="btn btn-md" id="applyCouponBtn">Apply Coupon</button>
                                                         </div>
-                                                        <!-- Add more checkboxes for other offers -->
                                                     </form>
-                                                </div>
-                                                <div class="modal-footer">
-                                                    <button type="button" class="btn btn-primary" onclick="applySelectedOffers()">Apply Selected Offers</button>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>                                    
+                                    </div>
+                                    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> <!-- Ensure jQuery is included -->
+
+                                    <script>
+                                        // Function to close the coupon modal
+                                        function closeCouponModal() {
+                                            $('#couponModal').modal('hide');
+                                        }
+                                    
+                                        // When the input field is clicked, show the coupon modal
+                                        $(document).ready(function() {
+                                            $('#couponInput').click(function() {
+                                                $('#couponModal').modal('show');
+                                            });
+                                        });
+                                    
+                                        $(document).ready(function() {
+                                            $('#applyCouponBtn').click(function(event) {
+                                                event.preventDefault(); // Prevent default form submission
+                                    
+                                                var selectedCouponId = $('#selectedCoupon').val();
+                                                var totalAmount = parseFloat('{{ total }}'); // Pass the total amount from Django template
+                                    
+                                                if (selectedCouponId) {
+                                                    $.ajax({
+                                                        url: '{% url "apply_coupon" %}',
+                                                        method: 'POST',
+                                                        headers: {
+                                                            'X-Requested-With': 'XMLHttpRequest' // Set AJAX header
+                                                        },
+                                                        data: {
+                                                            csrfmiddlewaretoken: '{{ csrf_token }}',
+                                                            coupon_id: selectedCouponId,
+                                                            total_amount: totalAmount
+                                                        },
+                                                        success: function(response) {
+                                                            var discountedTotal = response.discounted_total;
+                                                            var discountAmount = totalAmount - parseFloat(discountedTotal);
+                                                            $('#totalAmount').text('₹ ' + discountedTotal); // Update the total amount
+                                                            $('#discountAmount').text(discountAmount.toFixed(2)); // Display the discount amount
+                                                            $('#discountRow').show(); // Show the discount row
+                                                            $('#applyCouponBtn').hide(); // Hide the apply coupon button
+                                                            closeCouponModal(); // Close the coupon modal
+                                                        },
+                                                        error: function(xhr, status, error) {
+                                                            console.error(error);
+                                                        }
+                                                    });
+                                                }
+                                            });
+                                        });
+                                    </script>
+                                    
+                                    
                                 </div>
                             </div>
                             <div class="bt-1 border-color-1 mt-30 mb-30"></div>
@@ -270,84 +327,7 @@
         function closePopup() {
             document.getElementById("popup").style.display = "none";
         }
-    </script>
-    
-        
-    
-        
-    <script>
-        function showOffers() {
-            var xhr = new XMLHttpRequest();
-            xhr.open("GET", "/get_offers/", true);
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState == 4 && xhr.status == 200) {
-                    var offers = JSON.parse(xhr.responseText);
-                    var modalBody = document.getElementById("modalBody");
-                    modalBody.innerHTML = ""; // Clear previous content
-                    for (var i = 0; i < offers.length; i++) {
-                        var offer = offers[i];
-                        var offerCheckbox = document.createElement("div");
-                        offerCheckbox.className = "form-check";
-                        offerCheckbox.innerHTML = `
-                            <input class="form-check-input" type="checkbox" value="${offer.id}" id="offer${offer.id}">
-                            <label class="form-check-label" for="offer${offer.id}">
-                                ${offer.type}: ${offer.discount_percentage}% Discount
-                            </label>`;
-                        modalBody.appendChild(offerCheckbox);
-                    }
-                    // Show the modal
-                    var offerModal = new bootstrap.Modal(document.getElementById('offerModal'));
-                    offerModal.show();
-                }
-            };
-            xhr.send();
-        }
-
-    </script>
-
-    <script>
-        // Keep track of applied offers
-        var appliedOffers = [];
-    
-        function applySelectedOffers() {
-            var selectedOffers = [];
-            var checkboxes = document.querySelectorAll('input[type=checkbox]:checked');
-    
-            if (checkboxes.length > 0) {
-                checkboxes.forEach(function(checkbox) {
-                    var offerId = checkbox.value;
-                    // Check if the offer has already been applied
-                    if (!appliedOffers.includes(offerId)) {
-                        selectedOffers.push(offerId);
-                        // Add the offer to the list of applied offers
-                        appliedOffers.push(offerId);
-                    }
-                });
-    
-                // Send selected offers to the server to apply discounts and recalculate the total amount
-                var xhr = new XMLHttpRequest();
-                xhr.open("POST", "/apply_offers/", true); // Endpoint to apply offers
-                xhr.setRequestHeader("Content-Type", "application/json");
-                xhr.onreadystatechange = function () {
-                    if (xhr.readyState == 4 && xhr.status == 200) {
-                        var response = JSON.parse(xhr.responseText);
-                        if (response.success) {
-                            // Update the total amount on the page
-                            var newTotal = response.new_total;
-                            document.getElementById("totalAmount").innerText = newTotal;
-                            // Optionally, you can update other UI elements to reflect the changes
-                            console.log("Selected offers applied successfully.");
-                        } else {
-                            console.error("Failed to apply selected offers:", response.error);
-                            alert("Failed to apply selected offers. Please try again.");
-                        }
-                    }
-                };
-            }
-        }
-    </script>
-    
-    
+    </script> 
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.min.js"></script>
 

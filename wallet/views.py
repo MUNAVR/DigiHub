@@ -152,3 +152,4 @@ def handle_razorpay_failure(request):
     # Add your logic for handling failed payments
     messages.error(request, 'Payment failed. Please try again.')
     return redirect('user_panel:wallet.html')
+

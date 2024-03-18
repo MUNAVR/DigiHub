@@ -11,6 +11,8 @@
                     <a href="{%  url 'create_offer' %}" class="btn btn-primary"><i class="material-icons md-plus"></i> Create new</a>
                 </div>
             </div>
+            
+
             {% for message in messages %}
             <div class="alert alert-{{ message.tags }}" role="alert">
                 {{ message }}
@@ -25,35 +27,27 @@
                                 
                                     <th>referral by</th>
                                     <th>referral code</th>
-                                    <th>Dicount</th>
-                                    <th>Maximum amount</th>
-                                    <th>Minimum amou    nt</th>
+                                    <th>Amount</th>
                                     <th>Last date</th>
                                     <th>Action</th>
-                                </tr>
+                                </tr> 
                             </thead>
                             <tbody>
-                                {% for offer in offers %}
+                                {% for offer in referral_offers %}
                                 <tr>
                                     <td>{{ offer.referred_by }}</td>
-                                    <td>{{ offer.referral_code }}</td>>
-                                    <td>{{ offer.discount_percentage }}%</td>
-                                    <td>{{ offer.maximum_discountAmount }}</td>
-                                    <td>{{ offer.minimum_discountAmount }}</td>
+                                    <td>{{ offer.referral_code }}</td>
+                                    <td>{{ offer.referral_amount }}</td>
                                     <td>{{ offer.valid_to }}</td>
-                                    {% comment %} <td>
-                                        {% if offer.is_published %}
-                                            <form action="{% url 'unpublish_offer' offer.id %}" method="post" style="display: inline;">
-                                                {% csrf_token %}
-                                                <button type="submit" class="btn btn-warning">Unpublish</button>
-                                            </form>
-                                        {% else %}
-                                            <form action="{% url 'publish_offer' offer.id %}" method="post" style="display: inline;">
-                                                {% csrf_token %}
-                                                <button type="submit" class="btn btn-success">Publish</button>
-                                            </form>
-                                        {% endif %}
-                                    </td> {% endcomment %}
+                                    <td>
+                                        <a href="{% url 'referral_active' offer.id %}">
+                                            {% if offer.is_active %}
+                                                Active
+                                            {% else %}
+                                                Inactive
+                                            {% endif %}
+                                        </a>
+                                    </td>
                                     
                                 </tr>
                                 {% endfor %}

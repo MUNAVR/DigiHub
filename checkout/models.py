@@ -15,5 +15,6 @@ class Order(models.Model):
     payment_status=models.CharField(max_length=15,default="Pending")
     payment_method=models.CharField(max_length=15,default="COD")
     order_status=models.CharField(max_length=15,default="Pending")
+    delivery_date = models.DateTimeField(null=True, blank=True)  # New field for tracking delivery date
 
                         

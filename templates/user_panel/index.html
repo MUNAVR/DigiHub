@@ -64,8 +64,11 @@
                                         </div>
 
                                         <div class="product-price">
-                                            <span> ₹ {{variant.sale_price}}</span>
-                                            <span class="old-price"> ₹ {{variant.max_price}}</span>
+                                            <span> ₹ {{ variant.sale_price }}</span>
+                                            <span class="old-price"> ₹ {{ variant.max_price }}</span><br>
+                                            {% if variant.product.offer %}
+                                                <span class="offer offer-discount"> &nbsp&nbsp&nbsp&nbsp&nbsp{{ variant.product.offer }}% off</span><br>
+                                            {% endif %}
                                         </div>
                                         {% for offer in variant.product.productoffer_set.all %}
                                             {% if offer.is_active == True %}

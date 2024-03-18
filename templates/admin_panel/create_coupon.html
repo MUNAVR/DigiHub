@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Coupon</title>
+    <style>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                background-color: #f7f7f7;
+                padding: 20px;
+            }
+    
+            h1 {
+                color: #333;
+                text-align: center;
+            }
+    
+            form {
+                max-width: 400px;
+                margin: 0 auto;
+                background-color: #fff;
+                padding: 20px;
+                border-radius: 5px;
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            }
+    
+            label {
+                display: block;
+                margin-bottom: 10px;
+                font-weight: bold;
+            }
+    
+            input[type="text"],
+            input[type="number"],
+            input[type="checkbox"] {
+                width: 100%;
+                padding: 10px;
+                margin-bottom: 20px;
+                border: 1px solid #ccc;
+                border-radius: 4px;
+                box-sizing: border-box;
+            }
+    
+            input[type="checkbox"] {
+                width: auto;
+            }
+    
+            button[type="submit"] {
+                width: 100%;
+                padding: 10px;
+                background-color: #007bff;
+                color: #fff;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+                transition: background-color 0.3s ease;
+            }
+    
+            button[type="submit"]:hover {
+                background-color: #0056b3;
+            }
+        
+    </style>
+</head>
+<body>
+    <h1>Create Coupon</h1>
+    <form method="post">
+        {% csrf_token %}
+        <label for="code">Coupon Code:</label>
+        <input type="text" id="code" name="code" required><br>
+        {% if errors.code %}
+            <p style="color: red;">{{ errors.code }}</p>
+        {% endif %}
+        
+        <label for="discount">Discount (%):</label>
+        <input type="number" id="discount" name="discount" min="0" max="100" required><br>
+        {% if errors.discount %}
+            <p style="color: red;">{{ errors.discount }}</p>
+        {% endif %}
+        
+        <label for="validity_days">Validity (Days):</label>
+        <input type="number" id="validity_days" name="validity_days" min="1" required><br>
+        {% if errors.validity_days %}
+            <p style="color: red;">{{ errors.validity_days }}</p>
+        {% endif %}
+        
+        <label for="max_usage">Max Usage:</label>
+        <input type="number" id="max_usage" name="max_usage" min="1" required><br>
+        {% if errors.max_usage %}
+            <p style="color: red;">{{ errors.max_usage }}</p>
+        {% endif %}
+        
+        <label for="active">Active:</label>
+        <input type="checkbox" id="active" name="active" checked><br><br>
+        <button type="submit">Create Coupon</button>
+    </form>
+</body>
+</html>

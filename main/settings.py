@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'wishlist',
     'offers',
     'wallet',
+    'coupon',
 
     'django.contrib.sites',
     'allauth',
@@ -100,10 +101,10 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'digi_hub',
-        'USER': 'postgres',
-        'PASSWORD': 'munavar',
+        'USER': 'munavar',
+        'PASSWORD': 'jaseem',
         'HOST': 'localhost',
-        'PORT': '5433'
+        'PORT': ''
     }
 }
 
@@ -201,3 +202,4 @@ EMAIL_HOST_PASSWORD = 'bcnz owta nucw wwqw'
 #  CORS (Cross-Origin Resource Sharing) configuration.
 CSRF_TRUSTED_ORIGINS = ['https://*.mydomain.com','https://*.127.0.0.1']
 
+APPEND_SLASH = False

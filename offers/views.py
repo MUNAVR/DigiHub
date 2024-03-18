@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render,get_object_or_404
 from .models import *
 from datetime import datetime
 from django.contrib import messages
@@ -11,166 +11,107 @@ from decimal import Decimal
 from decimal import Decimal, InvalidOperation
 from django.http import JsonResponse
 # Create your views here.
+from django.contrib.auth.decorators import login_required  # Import the login_required decorator
+from django.utils.crypto import get_random_string
+
+ # Add the login_required decorator to restrict access to authenticated users
 
 
-def create_offer(request):
+def create_referral_offer(request):
     if request.method == 'POST':
-       
-        offer_type = request.POST.get('offer_type')
-        discount_percentage = request.POST.get('discount_percentage')
-        maximum_discount_amount = request.POST.get('maximum_discount_amount')
-        minimum_discount_amount = request.POST.get('minimum_discount_amount')
+        # Extract data from the request
+        referral_amount = request.POST.get('amount')
+        valid_from = timezone.now().date()
         valid_to = request.POST.get('valid_to')
+        referred_by_id = request.POST.get('referred_by')
 
-         # Perform validation
-        error_messages = []
-
-        # Validation for discount percentage
-        try:
-            discount_percentage = float(discount_percentage.replace('%', ''))
-            if not 1 < discount_percentage <= 100:
-                error_messages.append("Discount percentage must be between 1 and 100%.")
-        except ValueError:
-            error_messages.append("Invalid discount percentage format. Please provide a number without special characters.")
-
-
-         # Validation for maximum discount amount
-        try:
-            maximum_discount_amount = float(maximum_discount_amount.replace(',', ''))
-            if maximum_discount_amount <= 1:
-                error_messages.append("Maximum discount amount must be greater than 1.")
-        except ValueError:
-            error_messages.append("Invalid maximum discount amount format. Please provide a valid number.")
-
-
-         # Validation for minimum discount amount
-        try:
-            minimum_discount_amount = float(minimum_discount_amount.replace(',', ''))
-            if minimum_discount_amount < 1:
-                error_messages.append("Minimum discount amount must be greater than or equal to 1.")
-        except ValueError:
-            error_messages.append("Invalid minimum discount amount format. Please provide a valid number.")
-
-        if error_messages:
-            # If there are validation errors, render the form with error messages
-            product = Products.objects.filter(is_active=True)
-            brand = Brand.objects.filter(is_active=True)
-            customers = Customers.objects.filter(is_blocked=False)
+        # Check if all required fields are provided
+        if not all([referral_amount, valid_to, referred_by_id]):
+            error_message = "All fields are required."
+            users = Customers.objects.all()
             context = {
-                "product": product,
-                "brand": brand,
-                "customers": customers,
-                "error_messages": error_messages
+                "user": users,
+                "error_message": error_message
             }
             return render(request, 'admin_panel/create_offer.html', context)
+        
+        # Validate and convert valid_to to a date object
+        try:
+            valid_to = timezone.datetime.strptime(valid_to, '%Y-%m-%d').date()
+        except ValueError:
+            error_message = "Invalid date format for valid_to."
+            users = Customers.objects.all()
+            context = {
+                "user": users,
+                "error_message": error_message
+            }
+            return render(request, 'admin_panel/create_offer.html', context)
+        
+        # Validate referred_by_id
+        try:
+            referred_by_id = int(referred_by_id)
+            referred_by = Customers.objects.get(id=referred_by_id)
+        except (ValueError, Customers.DoesNotExist):
+            error_message = "Invalid referred_by ID or user does not exist."
+            users = Customers.objects.all()
+            context = {
+                "user": users,
+                "error_message": error_message
+            }
+            return render(request, 'admin_panel/create_offer.html', context)
+        
+        # Generate unique offer and referral codes
+        offer_code = get_random_string(length=10)
+        referral_code = get_random_string(length=10)
 
-
-        if offer_type == 'referral':
-            referral_code = request.POST.get('referral_code')
-            referred_by = request.POST.get('referred_by')
-            try:
-                referred=Customers.objects.get(id=referred_by)
-                offer = ReferralOffer(
-                    discount_percentage=discount_percentage,
-                    maximum_discountAmount=maximum_discount_amount,
-                    minimum_discountAmount=minimum_discount_amount,
-                    valid_to=valid_to,
-                    referral_code=referral_code,
-                    referred_by=referred
-                )
-                offer.save()
-                messages.success(request, "Offer created successfully.")
-                return redirect('referral_offer_list')
-            except Products.DoesNotExist:
-                return HttpResponse("Product with the provided name does not exist.")
-            
-        elif offer_type == 'product':
-            product_name = request.POST.get('product_name')
-            print(product_name)
-            try:
-                products = Products.objects.get(id=product_name)
-                print(products)
-                offer = ProductOffer(
-                    discount_percentage=discount_percentage,
-                    maximum_discountAmount=maximum_discount_amount,
-                    minimum_discountAmount=minimum_discount_amount,
-                    valid_to=valid_to,
-                    product=products
-                )
-                offer.save()
-                messages.success(request, "Offer created successfully.")
-                return redirect('product_offer_list')
-            except Products.DoesNotExist:
-                return HttpResponse("Product with the provided name does not exist.")
-        elif offer_type == 'brand':
-            brand_name = request.POST.get('brand_name')
-            try:
-                brand = Brand.objects.get(id=brand_name)
-                offer = BrandOffer(
-                    discount_percentage=discount_percentage,
-                    maximum_discountAmount=maximum_discount_amount,
-                    minimum_discountAmount=minimum_discount_amount,
-                    valid_to=valid_to,
-                    brand=brand
-                )
-                offer.save()
-                messages.success(request, "Offer created successfully.")
-                return redirect('brand_offer_list')
-            except Brand.DoesNotExist:
-                return HttpResponse("Brand with the provided name does not exist.")
+       
+        # Create the referral offer
+        print(offer_code)
+        print(referral_amount)
+        print(valid_from)
+        print(valid_to)
+        print(referral_code)
+        print(referred_by)
+        obj = ReferralOffer.objects.create(
+            offer_code=offer_code,
+            referral_amount=referral_amount,
+            valid_from=valid_from,
+            valid_to=valid_to,
+            referral_code=referral_code,
+            referred_by=referred_by
+        )
+        obj.save()
+        print(obj)
+        
+        # Add success message
+        messages.success(request, 'Referral offer created successfully.')
+        return redirect('referral_offer_list')
     
-    product = Products.objects.filter(is_active=True)
-    brand = Brand.objects.filter(is_active=True)
-    customers = Customers.objects.filter(is_blocked=False)
+    # Fetch users for referral selection
+    users = Customers.objects.all()
     context = {
-        "product": product,
-        "brand": brand,
-        "customers": customers
+        "user": users
     }
     return render(request, 'admin_panel/create_offer.html', context)
 
-def product_offer_list(request):
-    offers=ProductOffer.objects.all()
+
+
+def display_referral_offers(request):
+    offers = ReferralOffer.objects.all()
+    print(offers)
     context={
-        "offers":offers
+        "referral_offers":offers
     }
-    return render(request,"admin_panel/product_offer_list.html",context)
+    return render(request, 'admin_panel/referral_offer_list.html',context)
 
-def status_product(request,id):
-    try:
-        offer = ProductOffer.objects.get(id=id)
-        # Toggle the is_active status
-        offer.is_active = not offer.is_active
-        offer.save()
-        # Redirect back to the product offer list page
-        return redirect('product_offer_list')
-    except ProductOffer.DoesNotExist:
-        # Handle the case where the offer with the given ID does not exist
-        return HttpResponse("Offer not found.")    
+def referral_active(request, offer_id):
+    offer = get_object_or_404(ReferralOffer, id=offer_id)
+    # Toggle the active status of the coupon
+    offer.is_active = not offer.is_active
+    offer.save()
 
-def referral_offer_list(request):
-    offers= ReferralOffer.objects.all()
-    context={
-        "offers":offers
-    }
-    return render(request,"admin_panel/referral_offer_list.html",context)
+    # Add success message
+    status = "activated" if offer.is_active else "deactivated"
+    messages.success(request, f"Referral offer {status} successfully.")
 
-def brand_offer_list(request):
-    offers=BrandOffer.objects.all()
-    context={
-        "offers":offers
-    }
-    return render(request,"admin_panel/brand_offer_list.html",context)
-
-def get_offers(request):
-    product_offers = ProductOffer.objects.all()
-    brand_offers = BrandOffer.objects.all()
-
-    # Prepare offer data
-    offers = []
-    for offer in product_offers:
-        offers.append({"type": "Product", "discount_percentage": offer.discount_percentage})
-    for offer in brand_offers:
-        offers.append({"type": "Brand", "discount_percentage": offer.discount_percentage})
-
-    return JsonResponse(offers, safe=False)
+    return redirect('referral_offer_list')

@@ -6,6 +6,8 @@ from django.http import Http404
 from django.contrib import messages
 from django.http import Http404
 from django.core.exceptions import ValidationError
+from django.db.models import Q
+
 # Create your views here.
 
 
@@ -68,6 +70,7 @@ def Product_add(request):
         display=request.POST.get('display')
         battery=request.POST.get('battery')
         processor=request.POST.get('processor')
+        offer=request.POST.get('offer')
 
         # Check if name and description are not empty
         error_message = None
@@ -108,14 +111,18 @@ def Product_add(request):
             error_message.append('Battery field must contain at least one digit.')
         elif not any(char.isdigit() for char in camera):
              error_message.append('camera field must contain at least one digit.')
-
-
+        elif not offer.isdigit():
+            error_message.append('The offer field must contain only digits.')
+        elif len(offer) != 2:
+            error_message.append('The offer field must contain exactly two digits.')
+        elif int(offer) <= 0:
+            error_message.append('The offer field must contain a positive number.')
         else:
             try:
                 product_cat = Category.objects.get(id=product_category_id)
                 product_brd = Brand.objects.get(id=product_brand_id)
                 new_prod = Products(product_name=product_name, product_category=product_cat,
-                                    product_brand=product_brd,camera=camera,display=display,battery=battery,processor=processor)
+                                    product_brand=product_brd,camera=camera,display=display,battery=battery,processor=processor,offer=offer)
                 new_prod.save()
                 messages.success(request, 'Product Create successfully.')
                 return redirect('product_list')
@@ -291,6 +298,7 @@ def variant_add(request):
         except ValueError:
             error_message = 'Max price, sale price, and stock must be valid numbers.'
 
+        
         if error_message is None:
             if sale_price > max_price:
                 error_message = 'Sale price cannot be greater than the maximum price.'
@@ -329,6 +337,18 @@ def variant_add(request):
         except Products.DoesNotExist:
             raise Http404("Product with ID {} does not exist".format(product_id))
 
+        product = Products.objects.get(id=product_id)
+        offer = product.offer  # Retrieve the offer value
+
+        # Convert offer to float if it's not already
+        if not isinstance(offer, (float, int)):
+            offer = float(offer) / 100 
+
+        # Calculate sale price based on offer
+        if offer == 0:  
+            sale_price = sale_price
+        else:  
+            sale_price = max_price * (1 - offer)
         # Check if a variant with the same attributes already exists for the product
         existing_variant = Product_Variant.objects.filter(product=product, max_price=max_price, sale_price=sale_price, stock=stock)
         if existing_variant.exists():
@@ -423,7 +443,19 @@ def variant_edit(request, id):
         except ValidationError as e:
             context['error_message'] = str(e)
             return render(request, "admin_panel/variant_edit.html", context)
+        
+        product = Products.objects.get(id=id)
+        offer = product.offer  # Retrieve the offer value
 
+        # Convert offer to float if it's not already
+        if not isinstance(offer, (float, int)):
+            offer = float(offer) / 100 
+
+        # Calculate sale price based on offer
+        if offer == 0:  
+            sale_price = sale_price
+        else:  
+            sale_price = max_price * (1 - offer)
         # Update the Product_Variant instance
         edit = Product_Variant.objects.get(id=id)
         edit.max_price = max_price
@@ -442,3 +474,31 @@ def variant_edit(request, id):
 
         return redirect('variant_list')
     return render(request, "admin_panel/variant_edit.html", context)
+
+from django.shortcuts import render
+from django.db.models import Q
+from .models import Product_Variant
+
+def search_mobiles(request):
+    if request.method == 'POST':
+        search_item = request.POST.get("search_item").strip()
+        print("here")
+        # Prepare variations of the search query
+        variations = [search_item.capitalize(), search_item.lower(), search_item]
+
+        # Filter products based on various conditions
+        products = Product_Variant.objects.none()
+        for variation in variations:
+            products |= Product_Variant.objects.filter(
+                Q(product__product_name__icontains=variation) |
+                Q(product__product_name__istartswith=variation[:4])
+            )
+
+        if not products:  #  If no results are found
+            return redirect('user:index')
+        print("evide")
+        # Pass the filtered products to the template for rendering
+        return render(request, "user_panel/index.html", {'variant': products})
+
+    # If the request method is not POST, render the template without any search results
+    return redirect('user:index')

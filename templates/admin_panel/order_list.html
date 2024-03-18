@@ -10,17 +10,11 @@
                     <h2 class="content-title card-title">Order List </h2>
                 </div>
             </div>
-            {% if messages %}
-            <ul class="messages">
-                {% for message in messages %}
-                    {% if message.tags == 'success' %}
-                        <li class="success-message">{{ message }}</li>
-                    {% elif message.tags == 'error' %}
-                        <li class="error-message">{{ message }}</li>
-                    {% endif %}
-                {% endfor %}
-            </ul>
-            {% endif %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}" role="alert">
+                {{ message }}
+            </div>
+            {% endfor %}
             <div class="card mb-4">
                 <header class="card-header">
                 </header> <!-- card-header end// -->
@@ -59,7 +53,7 @@
                                             <div class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownAccount">
                                                 <a class="dropdown-item" href="{% url 'change_status' order.id %}?new_status=Pending">Pending</a>
                                                 <a class="dropdown-item" href="{% url 'change_status' order.id %}?new_status=Shipped">Shipped</a>
-                                                <a class="dropdown-item" href="{% url 'change_status' order.id %}?new_status=Delivered">Delivered</a>
+                                                <a class="dropdown-item" href="{% url 'change_status' order.id %}?new_status=Completed">Completed</a>
                                             </div>
                                         </li>
                                 

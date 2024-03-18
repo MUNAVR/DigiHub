@@ -18,6 +18,8 @@ urlpatterns =[
     path('variant_delete/<id>',views.variant_delete),
     path('variant_edit/<id>',views.variant_edit,name="variant_edit"),
 
+    path('search_mobiles',views.search_mobiles,name="search_mobiles"),
+
     # user_side
     
 

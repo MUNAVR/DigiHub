@@ -24,14 +24,6 @@
 <body>
     <div class="screen-overlay"></div>
     <aside class="navbar-aside" id="offcanvas_aside">
-        <div class="aside-top">
-            <a href="{% url 'admin_index' %}" class="brand-wrap">
-                <img src="{% static 'admin/assets/imgs/theme/logo.svg' %}" class="logo" alt="Evara Dashboard">
-            </a>
-            <div>
-                <button class="btn btn-icon btn-aside-minimize"> <i class="text-muted material-icons md-menu_open"></i> </button>
-            </div>
-        </div>
         <nav>
             <ul class="menu-aside">
                 <li class="menu-item active">
@@ -72,11 +64,18 @@
                     </a>
                     <div class="submenu">
                         <a href="{% url 'create_offer' %}">Create offer</a>
-                        <a href="{% url 'product_offer_list' %}">Product offer list</a>
-                        <a href="{% url 'brand_offer_list' %}">Brand offer list</a>
                         <a href="{% url 'referral_offer_list' %}">Referral offer list</a>
                     </div>
 
+                </li>
+                <li class="menu-item has-submenu">
+                    <a class="menu-link" href="page-sellers-cards.html"> <i class="icon material-icons md-store"></i>
+                        <span class="text">Coupon Management</span>
+                    </a>
+                    <div class="submenu">
+                        <a href="{% url 'create_coupon' %}">Create coupon</a>
+                        <a href="{% url 'coupen_list' %}">coupon list</a>
+                    </div>
                 </li>
                 <li class="menu-item has-submenu">
                     <a class="menu-link" href="page-orders-1.html"> <i class="icon material-icons md-shopping_cart"></i>

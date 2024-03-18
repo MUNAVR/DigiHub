@@ -5880,7 +5880,7 @@ h6.post-title {
 
 .search-style-2 form button {
   position: absolute;
-  right: 0px;
+  right: 96px;
   top: 50%;
   -webkit-transform: translateY(-50%);
   transform: translateY(-50%);
@@ -9923,3 +9923,13 @@ span.fi-rs-apps {
 .zoomContainer{ z-index: 9999;}
 .zoomWindow{ z-index: 9999;}
 /*# sourceMappingURL=main.css.map */
+
+/* Define styles for the offer percentage */
+.offer {
+  font-size: 80%; /* Reduce font size */
+  color: #999; /* Change color */
+}
+
+.offer-discount {
+  color: red; /* Change color for discount offers */
+}

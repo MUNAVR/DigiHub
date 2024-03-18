@@ -15,7 +15,7 @@
                 data-amount="{{ payment_details.amount }}"
                 data-currency="{{ payment_details.currency }}"
                 data-order_id="{{ payment_details.id }}"
-                data-buttontext="Pay with Razorpay"
+                data-buttontext="Pay with Razorpay"     
                 data-name="DigiHub"
                 data-description="Purchase Description"
                 data-image="https://example.com/your_logo.jpg"
@@ -25,6 +25,10 @@
                 
         </script>
         <input type="hidden" name="email" value="{{payment_details.email}}">
+
+        <input type="hidden" name="coupon_id" value="{{ payment_details.coupon }}">
+
+
         <input type="hidden" name="amount" value="{{payment_details.amount}}">
         <input type="hidden" custom="Hidden Element" name="hidden">
     </form>

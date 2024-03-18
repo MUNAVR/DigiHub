@@ -1,11 +1,14 @@
 from django.urls import path
 from admin_panel import views
 
-# app_name='admin_side'
+
 
 urlpatterns = [
     path('admin_login',views.admin_login,name="admin_login"),
     path('admin_index',views.admin_index,name="admin_index"),
+    
+    path('sales-report/',views.SalesReportView.as_view(), name='sales-report'),
+
     path('customer',views.customer,name="customer"),
     path('admin_logout',views.admin_logout,name="admin_logout"),
     path('customer_edit/<id>',views.customer_edit,name='customer_edit'),

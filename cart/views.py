@@ -45,6 +45,11 @@ def add_cart(request, variant_id):
     # Get product variant object based on variant_id
     product = get_object_or_404(Product_Variant, pk=variant_id)
 
+    # Check if stock is less than or equal to 1
+    if product.stock <= 1:
+        messages.error(request, f"is out of stock.")
+        return redirect('user:index')
+
     selected_rom = request.POST.get('selected_rom')
     
     # Create or get cart item for the user and product
@@ -67,6 +72,7 @@ def add_cart(request, variant_id):
 
     # Return success response
     return redirect('user:index')
+
 
 
 

@@ -6,8 +6,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from products.models import Product_Variant
 from app_1.decorators import check_blocked
 from django.contrib import messages
-from offers.models import ProductOffer
 from datetime import date
+from cart.models import Cart
 
 # Create your views here.
 
@@ -73,9 +73,6 @@ def wishlist(request):
     except Wishlist.DoesNotExist:
         messages.error(request, "Wishlist not found.")
         return redirect('user:index')
-    
-    for product_variant in wishlist.products.all():
-        apply_product_offers(product_variant)
 
     # Pass the wishlist items to the template along with offer prices
     wishlist_items = [{
@@ -85,23 +82,25 @@ def wishlist(request):
 
     return render(request, 'user_panel/wishlist.html', {'wishlist_items': wishlist_items})
 
-def apply_product_offers(product_variant):
-    # Get active offers for this product variant
-    active_offers = ProductOffer.objects.filter(
-        product=product_variant.product,
-        valid_from__lte=date.today(),
-        valid_to__gte=date.today()
-    )
 
-    # Apply the maximum discount from all offers
-    max_discount = 0
-    for offer in active_offers:
-        if offer.discount_percentage > max_discount:
-            max_discount = offer.discount_percentage
+def get_counts(request):
+    if 'email' not in request.session:
+        # Assuming you have a login URL named 'user:login'
+        return redirect('user:login')
     
-    # Update sale price if there's an offer
-    if max_discount > 0:
-        product_variant.sale_price -= (product_variant.sale_price * max_discount / 100)
-        print()
-
-
+    # Retrieve the user based on the email in the session
+    email = request.session.get('email')
+    user = get_object_or_404(Customers, email=email)
+    
+    # Fetch counts of items in wishlist and cart
+    wishlist_count = Wishlist.objects.filter(user=user).count()
+    cart_count = Cart.objects.filter(user_id=user).count()
+        # Prepare data dictionary to be returned as JSON
+    print(wishlist_count)
+    data = {
+        'wishlist_count': wishlist_count,
+        'cart_count': cart_count,
+    }
+    
+    # Return the data as JSON response
+    return JsonResponse(data)

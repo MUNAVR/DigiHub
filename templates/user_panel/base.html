@@ -130,7 +130,25 @@
             .rom-option.active a {
                 color: #fff;
             }
-        
+        /* Style for the search button */
+            .search-button {
+                background-color: #007bff; /* Change to your preferred color */
+                color: #fff; /* Text color */
+                border: none; /* Remove border */
+                padding: 10px 20px; /* Adjust padding as needed */
+                cursor: pointer;
+                transition: background-color 0.3s ease; /* Add a smooth transition effect */
+            }
+
+            .search-button:hover {
+                background-color: #0056b3; /* Change to a darker shade on hover */
+            }
+
+            /* Adjustments for the search input field */
+            .search-style-2 input[type="text"] {
+                /* Add any specific styling for the input field */
+            }
+
   
     </style>
     
@@ -153,8 +171,13 @@
                     <div class="col-xl-3 col-lg-4">
                         <div class="header-info header-info-right">
                             <ul>
-                                <li><i class="fi-rs-user"></i><a href="{% url 'user:login' %}">Log In</a></li>
-                                <li><i class="fi-rs-user"></i><a href="{% url 'user:logout' %}">Logout</a></li>
+                                {% if request.session.email %}
+                                    <!-- If user is logged in, show logout button -->
+                                    <li><i class="fi-rs-user"></i><a href="{% url 'user:logout' %}">Logout</a></li>
+                                {% else %}
+                                    <!-- If user is not logged in, show login button -->
+                                    <li><i class="fi-rs-user"></i><a href="{% url 'user:login' %}">Log In</a></li>
+                                {% endif %}
                             </ul>
                         </div>
                     </div>
@@ -164,13 +187,15 @@
         <div class="header-middle header-middle-ptb-1 d-none d-lg-block">
             <div class="container">
                 <div class="header-wrap">
-                    <div class="logo logo-width-1">
-                        {% comment %} <a href="user:index"><img src="{% static '%}" alt="logo"></a> {% endcomment %}
-                    </div>
+                    {% comment %} <div class="logo logo-width-1">
+                        <a href="user:index"><img src="#" alt="logo"></a>
+                    </div> {% endcomment %}
                     <div class="header-right">
                         <div class="search-style-2">
-                            <form action="#">
-                                <input type="text" placeholder="Search for Mobiles...">
+                            <form action="search_mobiles" method="post">
+                                {%csrf_token%}
+                                <input type="text" name="search_item" placeholder="Search for Mobiles..." required>
+                                <button type="submit" class="search-button">Search</button>
                             </form>
                         </div>
                         
@@ -206,18 +231,54 @@
                                     <img class="svgInject" alt="User Profile" src="{% static 'imgs/theme/icons/icons-userprofile.png' %}">
                                 </a>
                             </div>
-                            <div class="header-action-icon-2">
-                                <a href="{% url 'wishlist' %}" href="{% url 'wishlist' %}">
-                                    <img class="svgInject" alt="Wishlist" src="{% static 'imgs/theme/icons/icon-heart.svg' %}">
-                                    <span class="pro-count blue">4</span>
-                                </a>
-                            </div>
-                            <div class="header-action-icon-2">
-                                <a class="mini-cart-icon" href="{% url 'shop_cart' %}">
-                                    <img alt="Cart" src="{% static 'imgs/theme/icons/icon-cart.svg' %}">
-                                    <span class="pro-count blue">2</span>
-                                </a>
-                            </div>
+                            
+                            <!-- base.html -->
+
+                                <!-- Add jQuery script tag if you haven't included it already -->
+                                    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+                                    <script>
+                                    $(document).ready(function() {
+                                        // Function to fetch counts and update HTML
+                                        function updateCounts() {
+                                            $.ajax({
+                                                url: "{% url 'get_counts' %}",  // Endpoint URL
+                                                type: 'GET',
+                                                success: function(data) {
+                                                    // Update wishlist count
+                                                    $('#wishlist-count').text(data.wishlist_count);
+                                                    // Update cart count
+                                                    $('#cart-count').text(data.cart_count);
+                                                },
+                                                error: function(xhr, status, error) {
+                                                    console.error('Error fetching counts:', error);
+                                                }
+                                            });
+                                        }
+
+                                        // Initial update on page load
+                                        updateCounts();
+
+                                        // Periodically update counts every 60 seconds (adjust as needed)
+                                        setInterval(updateCounts, 60000);
+                                    });
+                                    </script>
+
+                                    <!-- Wishlist icon with count -->
+                                    <div class="header-action-icon-2">
+                                        <a href="{% url 'wishlist' %}">
+                                            <img class="svgInject" alt="Wishlist" src="{% static 'imgs/theme/icons/icon-heart.svg' %}">
+                                            <span class="pro-count blue" id="wishlist-count"></span>
+                                        </a>
+                                    </div>
+
+                                    <!-- Cart icon with count -->
+                                    <div class="header-action-icon-2">
+                                        <a class="mini-cart-icon" href="{% url 'shop_cart' %}">
+                                            <img alt="Cart" src="{% static 'imgs/theme/icons/icon-cart.svg' %}">
+                                            <span class="pro-count blue" id="cart-count"></span>
+                                        </a>
+                                    </div>
                         </div>
                     </div>
                 </div>

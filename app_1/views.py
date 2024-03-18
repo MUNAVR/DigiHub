@@ -22,8 +22,10 @@ from app_1.decorators import check_blocked
 from django.contrib.auth.decorators import login_required
 from category.models import Brand
 from django.db.models import F, Max, Min
-from offers.models import ProductOffer
 from datetime import date
+from offers.models import ReferralOffer
+from django.db import transaction
+from wallet.models import Wallet
 
 
 def google_oauth_callback(request):
@@ -37,6 +39,7 @@ def signup(request):
         contact = request.POST.get('mobile')
         pass1 = request.POST.get('pass1')
         pass2 = request.POST.get('pass2')
+        referred_by=request.POST.get('referred_by')
 
 
         # Validate first name format
@@ -70,7 +73,11 @@ def signup(request):
         if pass1 != pass2:
             messages.error(request, 'Passwords do not match.')
             return redirect('user:signup')
-
+        
+        
+        if not validate_referred(referred_by):
+            messages.error(request, 'Referred ID can only contain letters and digits, and must not be all the same character.')
+            return redirect('user:signup')
         
         # Validate password format
         if not validate_password(pass1):
@@ -83,6 +90,7 @@ def signup(request):
         request.session['email'] = email
         request.session['contact'] = contact
         request.session['password'] = pass1
+        request.session['referred_by']=referred_by
 
         random_num = random.randint(1000, 9999)
         request.session['OTP_Key'] = random_num
@@ -122,7 +130,11 @@ def validate_contact(contact):
 def validate_password(password):
     # Check if password is at least 6 characters long, includes one number, and has no spaces
     return bool(re.match(r'^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$', password))
-
+def validate_referred(referred):
+    # Check if the referred ID contains only letters and digits and is not all the same character
+    if not re.match(r'^[a-zA-Z0-9]+$', referred) or len(set(referred)) == 1:
+        return False
+    return True
 
 def verify_otp(request):
     if request.method == "POST":
@@ -136,9 +148,23 @@ def verify_otp(request):
             email = request.session.get('email')
             contact = request.session.get('contact')
             password = request.session.get('password')
-            user = Customers(first_name=fname, last_name=lname, email=email, phone=contact, password=password)
-            user.save()
-            
+            referred_by=request.session.get('referred_by')
+
+            with transaction.atomic():
+                user= Customers(first_name=fname, last_name=lname, email=email, phone=contact, password=password)
+                user.save()
+
+            # Add referral amount if a referral ID is provided
+            if referred_by:
+                    referred_offer = ReferralOffer.objects.get(referral_code=referred_by)
+                    referred_amount = referred_offer.referral_amount
+                    # Retrieve or create the user's wallet
+                    wallet, created = Wallet.objects.get_or_create(user=user)
+                    # Add referral amount to the user's wallet
+                    wallet.balance += referred_amount
+                    wallet.save()
+                
+
             # Clear session data after successful registration
             del request.session['OTP_Key']
             del request.session['fname']
@@ -146,7 +172,7 @@ def verify_otp(request):
             del request.session['email']
             del request.session['contact']
             del request.session['password']
-
+            del request.session['referred_by']
             messages.success(request, "Registration successful! Please login.")
             return redirect('user:login')
 
@@ -272,33 +298,16 @@ def index(request):
         if all(attribute.is_active for attribute in variant.attributes.all()):
             active_variants.append(variant)
 
-    # Apply offers to variants
-    for variant in active_variants:
-        # Get active offers for this product
-        active_offers = ProductOffer.objects.filter(
-            product=variant.product,
-            valid_from__lte=date.today(),
-            valid_to__gte=date.today()
-        )
-        # Apply the maximum discount from all offers
-        max_discount = 0
-        for offer in active_offers:
-            if offer.discount_percentage > max_discount:
-                max_discount = offer.discount_percentage
-        
-        # Update sale price if there's an offer
-        if max_discount > 0:
-            variant.sale_price -= (variant.sale_price * max_discount / 100)
 
     # Order the active variants by sale price
     active_variants = sorted(active_variants, key=lambda x: x.sale_price, reverse=True)
 
     # Get the latest 4 active variants
-    new_variants = active_variants[:4]
+    new_variant=Product_Variant.objects.all().order_by('-created_at')[:4]
 
     context = {
         "variant": active_variants,
-        "new_variant": new_variants,
+        "new_variant": new_variant,
         "count": len(active_variants)
     }
 
@@ -353,24 +362,7 @@ def product_details(request, id):
     
     # Retrieve product variant and pass it to the template context
     product_variant = Product_Variant.objects.filter(pk=id) 
-    
-    # Apply offers to the product variant
-    for variant in product_variant:
-        # Get active offers for this product
-        active_offers = ProductOffer.objects.filter(
-            product=variant.product,
-            valid_from__lte=date.today(),
-            valid_to__gte=date.today()
-        )
-        # Apply the maximum discount from all offers
-        max_discount = 0
-        for offer in active_offers:
-            if offer.discount_percentage > max_discount:
-                max_discount = offer.discount_percentage
-        
-        # Update sale price if there's an offer
-        if max_discount > 0:
-            variant.sale_price -= (variant.sale_price * max_discount / 100)
+
     
     context = {
         "variant": product_variant,
