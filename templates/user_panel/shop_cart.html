@@ -4,6 +4,31 @@
 {% block title %}cart{% endblock %}
 
 {% block content %}
+<style>
+    .error-message {
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: #f44336;
+        color: white;
+        padding: 15px 20px;
+        border-radius: 5px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        z-index: 9999;
+        text-align: center;
+        width: 300px;
+    } 
+    .close-btn {
+        position: absolute;
+        top: 5px;
+        right: 10px;
+        cursor: pointer;
+        font-size: 20px;
+        color: white;
+    }
+    
+</style>
     <main class="main">
         <div class="page-header breadcrumb-wrap">
             <div class="container">
@@ -14,26 +39,10 @@
                 </div>
             </div>
         </div>
-        <div id="myModal" class="modal">
-            <div class="modal-content">
-              <span class="close">&times;</span>
-              <p>Maximum quantity allowed is 3!</p>
-            </div>
-          </div>
-          {% if messages %}
-          <div class="container">
-              <div class="row">
-                  <div class="col-md-12">
-                      {% for message in messages %}
-                      <div class="alert alert-success alert-dismissible fade show" role="alert">
-                          {{ message }}
-                          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                      </div>
-                      {% endfor %}
-                  </div>
-              </div>
-          </div>
-          {% endif %}
+        <div class="error-message" style="display: none;">
+            <span class="close-btn ">&times;</span>
+            <p>Error Message Here</p>
+        </div> 
         <section class="mt-50 mb-50">
             <div class="container">
                 <div class="row">
@@ -44,6 +53,7 @@
                                     <tr class="main-heading">
                                         <th scope="col">Image</th>
                                         <th scope="col">Name</th>
+                                        {% comment %} <th scopre="col">Available<br>Stock</th> {% endcomment %}
                                         <th scope="col">Price</th>
                                         <th scope="col">Quantity</th>
                                         <th scope="col">Subtotal</th>
@@ -55,8 +65,9 @@
                                     <tr>
                                         <td class="image product-thumbnail"><img src="{{ cart_item.product_variant.thumbnail_image.url }}" alt="#"></td>
                                         <td class="product-des product-name">
-                                            <h5 class="product-name"><a href="shop-product-right.html">{{ cart_item.product_variant.product.product_name }}</a></h5>
+                                            <h5 class="product-name"><a href="product_details/{{cart_item.product_variant.product.id}}">{{ cart_item.product_variant.product.product_name }}</a></h5>
                                         </td>
+                                        <td class="stock" data-title="" style="display: none;"><span>{{ cart_item.product_variant.stock }}</span></td>
                                         <td class="price" data-title="Price"><span>{{ cart_item.product_variant.sale_price }}</span></td>
                                         <td class="text-center" data-title="Quantity">
                                             <div class="detail-qty border radius m-auto">
@@ -106,26 +117,36 @@
             </div>
         </section>
     </main>
+    <!-- Include Bootstrap CSS -->
+    <!-- Include Bootstrap JS and jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <!-- Bootstrap Modal -->
+   
+
     <script>
-        // Script.js
         $(document).ready(function () {
-            // Function to update subtotal when quantity changes
+
+            $(".close-btn").click(function () {
+                $(".error-message").hide(); // Hide the error message when close button is clicked
+            });
+
             $(".qty-up, .qty-down").on("click", function (e) {
                 e.preventDefault();
                 var $button = $(this);
                 var oldValue = $button.siblings(".qty-val").text();
                 var newValue;
-                var maxQuantity = 2; // Maximum quantity allowed
+                var maxQuantity = 5; // Maximum quantity allowed
                 var cartItemId = $button.data("cartitemid");
                 var price = parseFloat($button.closest("tr").find(".price span").text());
-
+                var stockQuantity = parseInt($button.closest("tr").find(".stock span").text());
+    
                 if ($button.hasClass("qty-up")) {
                     if (oldValue < maxQuantity) {
                         newValue = parseInt(oldValue) + 1;
                     } else {
                         // Show the modal
-                        $("#myModal").css("display", "block");
+                        $(".error-message").text("Requested quantity exceeds available stock").show();
                         return;
                     }
                 } else {
@@ -135,17 +156,18 @@
                         newValue = 1;
                     }
                 }
-
+    
+                if (newValue > stockQuantity) {
+                    // Display message when available stock is reached
+                    $(".error-message").text("Available stock limit reached.").show();
+                    return;
+                }
+    
                 $button.siblings(".qty-val").text(newValue);
-
-                // Update subtotal dynamically
+    
                 var subtotal = price * newValue;
                 $button.closest("tr").find(".text-right span").text(subtotal.toFixed(2));
-
-                // Update total amount
-                updateTotalAmount();
-
-                // Update quantity in the backend via AJAX
+    
                 $.ajax({
                     type: "POST",
                     url: "{% url 'update_cart_quantity' %}",
@@ -156,12 +178,9 @@
                     },
                     success: function (data) {
                         if (data.quantity != undefined) {
-                            // Quantity updated successfully, update total subtotal
                             updateCartTotals();
                         } else {
-                            // Error updating quantity, revert the displayed quantity
                             $button.siblings(".qty-val").text(oldValue);
-                            // Optionally, display an error message to the user
                             console.log("Error updating quantity:", data.error);
                         }
                     },
@@ -169,27 +188,24 @@
                         console.log("Error:", errorThrown);
                     }
                 });
-
-                // Disable/enable increment and decrement buttons based on quantity
+    
                 updateButtonState($button, newValue, maxQuantity);
             });
-
-            // Function to update button state based on quantity
+    
             function updateButtonState($button, newValue, maxQuantity) {
                 if (newValue >= maxQuantity) {
                     $button.addClass("disabled");
                 } else {
                     $button.siblings(".qty-up").removeClass("disabled");
                 }
-
+    
                 if (newValue > 1) {
                     $button.siblings(".qty-down").removeClass("disabled");
                 } else {
                     $button.siblings(".qty-down").addClass("disabled");
                 }
             }
-
-            // Function to update total amount
+    
             function updateTotalAmount() {
                 var total = 0;
                 $(".text-right span").each(function () {
@@ -200,8 +216,7 @@
                 });
                 $(".cart_total_amount span").text(total.toFixed(2));
             }
-
-            // Function to update cart totals
+    
             function updateCartTotals() {
                 var total = 0;
                 $(".text-right span").each(function () {
@@ -212,24 +227,12 @@
                 });
                 $("#total-subtotal").text(total.toFixed(2));
             }
-
-            // Call the function initially to set the total subtotal
-            updateCartTotals();
-        });
-        
-    </script>
-    <script>
-        // Close the modal when the close button is clicked
-        $(".close").on("click", function() {
-            $("#myModal").css("display", "none");
-        });
     
-        // Close the modal when the user clicks anywhere outside of the modal
-        window.onclick = function(event) {
-            var modal = document.getElementById('myModal');
-            if (event.target == modal) {
-                modal.style.display = "none";
-            }
-        };
-    </script>
+            // Hide error message initially
+            $(".error-message").hide();
+        });
+
+        
+    </script>  
+   
     {% endblock %}

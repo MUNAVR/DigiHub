@@ -5,15 +5,45 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sales Report</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+
 </head>
 <body>
     <h1>Sales Report</h1>
-
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>#ID</th>
+                <th scope="col">Date</th>
+                <th scope="col">user</th>
+                <th scope="col">Total Amount</th>
+                <th scope="col">Payment Status</th>
+                <th scope="col">Payment Method</th>
+                <th scope="col">Order Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for order in orders  %}
+            <tr>
+                
+                <td>{{order.id}}</td>
+                <td>{{order.user.first_name}}</td>
+                <td><b>{{order.order_date}}</b></td>
+                <td>{{order.total_amount}}</td>
+                <td><span class="badge rounded-pill alert-warning">{{order.payment_status}}</span></td>
+                <td>{{order.payment_method}}</td>
+                <td>{{order.order_status}}</td>  
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
     {% if daily_orders_count is not None %}
         <h2>Daily Report</h2>
         <p>Number of Daily Orders: {{ daily_orders_count }}</p>
         <p>Daily Revenue: ${{ daily_revenue }}</p>
         <p>Number of Daily Cancelled Orders: {{ daily_cancelled_orders }}</p>
+        <p>Daily Discount Amount: ${{ daily_discount_amount }}</p>
+        <p>Availble Discount Count: {{ daily_discount_count }}</p>
     {% endif %}
 
     {% if weekly_orders_count is not None %}
@@ -21,20 +51,18 @@
         <p>Number of Weekly Orders: {{ weekly_orders_count }}</p>
         <p>Weekly Revenue: ${{ weekly_revenue }}</p>
         <p>Number of Weekly Cancelled Orders: {{ weekly_cancelled_orders }}</p>
+        <p>Weekly Discount Amount: ${{ weekly_discount_amount }}</p>
+        <p>Availble Discount Count: {{ weekly_discount_count }}</p>
     {% endif %}
 
-    {% if monthly_orders_count is not None %}
-        <h2>Monthly Report</h2>
-        <p>Number of Monthly Orders: {{ monthly_orders_count }}</p>
-        <p>Monthly Revenue: ${{ monthly_revenue }}</p>
-        <p>Number of Monthly Cancelled Orders: {{ monthly_cancelled_orders }}</p>
-    {% endif %}
 
     {% if yearly_orders_count is not None %}
         <h2>Yearly Report</h2>
         <p>Number of Yearly Orders: {{ yearly_orders_count }}</p>
         <p>Yearly Revenue: ${{ yearly_revenue }}</p>
         <p>Number of Yearly Cancelled Orders: {{ yearly_cancelled_orders }}</p>
+        <p>yearly Discount Amount: ${{ yearly_discount_amount }}</p>
+        <p>Availble Discount Count: {{ yearly_discount_count }}</p>
     {% endif %}
 
     {% if custom_orders_count is not None %}
@@ -42,6 +70,8 @@
         <p>Number of Custom Orders: {{ custom_orders_count }}</p>
         <p>Custom Revenue: ${{ custom_revenue }}</p>
         <p>Number of Custom Cancelled Orders: {{ custom_cancelled_orders }}</p>
+        <p>Custom Discount Amount: ${{ custom_discount_amount }}</p>
+        <p>Availble Discount Count: {{ custom_discount_count }}</p>
     {% endif %}
 </body>
 </html>

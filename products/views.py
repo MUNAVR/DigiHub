@@ -12,6 +12,9 @@ from django.db.models import Q
 
 
 def product_attributes(request):
+    if 'username' not in request.session:
+        return redirect('admin_login') 
+    
     if request.method == 'POST':
         color = request.POST.get('color')
         ram = request.POST.get('ram')
@@ -38,6 +41,9 @@ def product_attributes(request):
     return render(request, "admin_panel/attributes_values.html", context)
 
 def attribute_edit(request,id):
+    if 'username' not in request.session:
+        return redirect('admin_login') 
+    
     att=Attribute_Value.objects.get(pk=id)
     context={'obj':att}
     if request.method == 'POST':
@@ -62,6 +68,9 @@ def attribute_delete(request,id):
 # product----------------------------------------------------------------------
 
 def Product_add(request):
+    if 'username' not in request.session:
+        return redirect('admin_login') 
+    
     if request.method == 'POST':
         product_name = request.POST.get('name')
         product_category_id = request.POST.get('Category')
@@ -153,15 +162,18 @@ def Product_add(request):
 
 
 def Product_list(request):
+    if 'username' not in request.session:
+        return redirect('admin_login') 
+    
     products = Products.objects.all().order_by("created_at")
     context={"products":products}
     return render(request,"admin_panel/product_list.html",context)
 
-from django.shortcuts import render, redirect
-from datetime import datetime
-from .models import Products, Category, Brand
 
 def product_edit(request, id):
+    if 'username' not in request.session:
+        return redirect('admin_login') 
+
     if request.method == 'POST':
         product_name = request.POST.get('name')
         product_category_id = request.POST.get('Category')
@@ -272,6 +284,9 @@ def validate_image_extension(file):
         raise ValidationError('Only JPEG and PNG files are allowed.')
 
 def variant_add(request):
+    if 'username' not in request.session:
+        return redirect('admin_login') 
+    
     attributes = Attribute_Value.objects.filter(is_active=True)
     products = Products.objects.filter(is_active=True)
     context = {
@@ -342,13 +357,28 @@ def variant_add(request):
 
         # Convert offer to float if it's not already
         if not isinstance(offer, (float, int)):
-            offer = float(offer) / 100 
+            offer = float(offer) / 100
 
         # Calculate sale price based on offer
         if offer == 0:  
             sale_price = sale_price
         else:  
             sale_price = max_price * (1 - offer)
+
+
+        brand_offer=product.product_brand
+        if not isinstance(brand_offer, (float, int)):
+            try:
+                brand_offer = float(brand_offer) / 100
+            except (ValueError, TypeError):
+                brand_offer = 0  # Set a default offer value
+
+            # Calculate sale price based on brand_offer
+        if brand_offer == 0:
+            sale_price = sale_price
+        else:
+            sale_price = max_price * (1 - brand_offer)
+
         # Check if a variant with the same attributes already exists for the product
         existing_variant = Product_Variant.objects.filter(product=product, max_price=max_price, sale_price=sale_price, stock=stock)
         if existing_variant.exists():
@@ -386,6 +416,9 @@ def variant_add(request):
 
 
 def variant_list(request):
+    if 'username' not in request.session:
+        return redirect('admin_login') 
+    
     variants = Product_Variant.objects.select_related().order_by('created_at')
     context = {"variant": variants}
     return render(request,"admin_panel/variant_list.html",context)
@@ -396,6 +429,9 @@ def variant_delete(request,id):
     return redirect('variant_list')
 
 def variant_edit(request, id):
+    if 'username' not in request.session:
+        return redirect('admin_login') 
+    
     attributes = Attribute_Value.objects.filter(is_active=True)
     products = Products.objects.filter(is_active=True)
     obj = Product_Variant.objects.get(id=id)
@@ -444,18 +480,7 @@ def variant_edit(request, id):
             context['error_message'] = str(e)
             return render(request, "admin_panel/variant_edit.html", context)
         
-        product = Products.objects.get(id=id)
-        offer = product.offer  # Retrieve the offer value
-
-        # Convert offer to float if it's not already
-        if not isinstance(offer, (float, int)):
-            offer = float(offer) / 100 
-
-        # Calculate sale price based on offer
-        if offer == 0:  
-            sale_price = sale_price
-        else:  
-            sale_price = max_price * (1 - offer)
+        
         # Update the Product_Variant instance
         edit = Product_Variant.objects.get(id=id)
         edit.max_price = max_price

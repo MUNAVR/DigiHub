@@ -20,6 +20,7 @@
     <link rel="stylesheet" href="{% static 'css/main.css' %}">
     <title>{% block title %}My Site{% endblock %}</title>
     <style>
+        
             /* CSS for the message box */
                 .modal {
                     display: none; /* Hidden by default */
@@ -149,14 +150,18 @@
                 /* Add any specific styling for the input field */
             }
 
-  
+            input[type="radio"] {
+                width: 15px; /* Adjust width as needed */
+                height: 15px; /* Adjust height as needed */
+            }
     </style>
     
 
 </head>
 
-<body id="product-list">
-    <header class="header-area header-style-1 header-height-2">
+<body id="product-details-container">
+  <div id="product-list">
+    <header class="header-area header-style-1 header-height-2" >
         <div class="header-top header-top-ptb-1 d-none d-lg-block">
             <div class="container">
                 <div class="row align-items-center">
@@ -426,9 +431,10 @@
     <script src="{% static 'js/main.js'%}"></script>
     <script src="{% static 'js/shop.js'%}"></script>
     
-
+</div>
 </body>
 
 
 <!-- Mirrored from wp.alithemes.com/html/evara/evara-frontend/index.html by HTTrack Website Copier/3.x [XR&CO'2014], Sun, 01 Aug 2021 15:25:49 GMT -->
 </html>
+

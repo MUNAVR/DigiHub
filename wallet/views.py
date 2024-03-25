@@ -14,6 +14,7 @@ import razorpay
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import get_object_or_404
 from decimal import Decimal
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 # Create your views here.
 
 @check_blocked
@@ -21,23 +22,21 @@ def wallet(request):
     current_email = request.session['email']
     user = Customers.objects.get(email=current_email)
 
+    transactions = Transaction.objects.all().order_by('-date_created')
+    paginator = Paginator(transactions, 10)  # Show 10 transactions per page
+
+    page_number = request.GET.get('page')
     try:
-        # Retrieve the user's wallet
-        wallet = Wallet.objects.get(user=user)
-        
-        # Retrieve the user's transaction history
-        transactions = Transaction.objects.filter(wallet=wallet).order_by('-date_created')
-    except Wallet.DoesNotExist:
-        # If the user doesn't have a wallet, set wallet and transactions to None
-        wallet = None
-        transactions = None
+        page_obj = paginator.page(page_number)
+    except PageNotAnInteger:
+        page_obj = paginator.page(1)
+    except EmptyPage:
+        page_obj = paginator.page(paginator.num_pages)
 
-    context = {
-        "wallet": wallet,
-        "transactions": transactions
-    }
+    # Assuming you have a way to retrieve the wallet object for the current user
+    wallet = Wallet.objects.get(user=user)
 
-    return render(request, "user_panel/wallet.html", context)
+    return render(request, 'user_panel/wallet.html', {'page_obj': page_obj, 'wallet': wallet})
 
 
 @csrf_exempt

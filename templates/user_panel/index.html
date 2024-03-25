@@ -37,7 +37,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="product-list mb-50" >
+                            <div id="product-list" class="product-list mb-50" >
                                     {% for variant in variant %}
                                     {% for attribute_value in variant.attributes.all %}
                                 <div class="product-cart-wrap">
@@ -91,6 +91,45 @@
                                     {% endfor %}
                                     {% endfor %}
                             </div>
+                            <div class="pagination-area mt-30 mb-50">
+                                <nav aria-label="Page navigation example">
+                                    <ul id="pagination" class="pagination justify-content-start">
+                                        {% if variant.has_previous %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="?page=1">&laquo;</a>
+                                            </li>
+                                        {% else %}
+                                            <li class="page-item disabled">
+                                                <span class="page-link">&laquo;</span>
+                                            </li>
+                                        {% endif %}
+                            
+                                        {% for num in variant.paginator.page_range %}
+                                            {% if num == variant.number %}
+                                                <li class="page-item active">
+                                                    <span class="page-link">{{ num }}</span>
+                                                </li>
+                                            {% else %}
+                                                <li class="page-item">
+                                                    <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                                                </li>
+                                            {% endif %}
+                                        {% endfor %}
+                            
+                                        {% if variant.has_next %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="?page={{ variant.paginator.num_pages }}">&raquo;</a>
+                                            </li>
+                                        {% else %}
+                                            <li class="page-item disabled">
+                                                <span class="page-link">&raquo;</span>
+                                            </li>
+                                        {% endif %}
+                                    </ul>
+                                </nav>
+                            </div>
+                            
+                               
                             <!--pagination-->
                         </div>
                         <div class="col-lg-3 primary-sidebar sticky-sidebar">
@@ -118,11 +157,28 @@
                                 </div>
                                 {% endfor %}
                             </div>
+                            {% comment %} <div class="col-lg-3 primary-sidebar sticky-sidebar">
+                                <div class="widget-category mb-30">
+                                    <h5 class="section-title style-1 mb-30 wow fadeIn animated">Brands</h5>
+                                    <ul class="categories">
+                                        {% for brand in brands %}
+                                            {% if brand.offer %}
+                                                <li><a href="#">{{ brand.name }}, {{ brand.offer }}% off</a></li>
+                                            {% else %}
+                                                <li><a href="#">{{ brand.name }}</a></li>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div> {% endcomment %}
                         </div>
                     </div>
-                </div>
+                </div> 
             </section>
+                  
         </main>
+    
+        
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
         <script>
             $(document).ready(function() {
@@ -174,4 +230,41 @@
         }
 
 </script>
+
+<script>
+    // Check if the user is logged in and prevent navigating back to the login page
+    window.onload = function () {
+        if (window.history.replaceState) {
+            if (window.location.href.indexOf('login') !== -1) {
+                window.history.replaceState(null, null, '/');
+            }
+        }
+    }
+</script>
+
+<script>
+    $(document).ready(function() {
+        $('#pagination').on('click', 'a.page-link', function(event) {
+            event.preventDefault(); // Prevent default link behavior
+
+            var pageUrl = $(this).attr('href'); // Get the URL of the clicked page
+            loadProductList(pageUrl); // Load product list for the clicked page
+        });
+    });
+
+    // Function to load product list using AJAX
+    function loadProductList(pageUrl) {
+        $.ajax({
+            type: 'GET',
+            url: pageUrl,
+            success: function(response) {
+                $('#product-list').html(response); // Update only the product list section
+            },
+            error: function(xhr, textStatus, errorThrown) {
+                console.error('Error:', errorThrown);
+            }
+        });
+    }
+</script>
+
 {% endblock %}

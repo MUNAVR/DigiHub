@@ -34,7 +34,6 @@
             <div class="container">
                 <div class="breadcrumb">
                     <a href="{% url 'user:index' %}" rel="nofollow">Home</a>
-                    <span></span> Shop
                     <span></span> cart
                     <span></span> checkout
                 </div>
@@ -60,10 +59,11 @@
                         <div class="mb-25">
                             <h4>Billing Details</h4>
                         </div>
-                        <form method="post">
+                        <form id="address_form" method="POST" >
                             {% csrf_token %}
                             {% for add1 in add1 %}
-                            <input type="hidden" name="form_type" value="billing">
+                            <input type="radio" id="1" name="selected_address_id" value="address1">
+                            <label for="address1_{{ add1.id }}">
                             <div class="form-group">
                                 <input type="text" required="" name="fname"  value ="{{add1.user.first_name}}" placeholder="First name *">
                             </div>
@@ -99,7 +99,8 @@
                                 <div id="collapseAddress" class="different_address collapse in">
                                     {% for add2 in add2 %}
                                     <!-- Form 2 for shipping address -->
-                                    <input type="hidden" name="form_type" value="shipping">
+                                    <input type="radio" id="2" name="selected_address_id" value="address2">
+                                    <label for="address2_{{ add2.id }}">
                                     <div class="form-group">
                                         <input type="text" required="" name="fname" value ="{{add2.user.first_name}}" placeholder="First name *">
                                     </div>
@@ -328,6 +329,45 @@
             document.getElementById("popup").style.display = "none";
         }
     </script> 
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('place_order_button').addEventListener('click', function() {
+                var selectedAddressId = document.querySelector('input[name="selected_address_id"]:checked');
+                if (selectedAddressId) {
+                    var csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+                    var addressId = selectedAddressId.value;
+                    // Send selected address ID to the server using AJAX
+                    fetch('/save_order_address/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded', // Change content type
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRFToken': csrfToken
+                        },
+                        body: 'selected_address_id=' + encodeURIComponent(addressId) // Encode the data properly
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            return response.json();
+                        }
+                        throw new Error('Network response was not ok.');
+                    })
+                    .then(data => {
+                        // Handle success response if needed
+                        console.log(data);
+                    })
+                    .catch(error => {
+                        // Handle error response if needed
+                        console.error('There was an error!', error);
+                    });
+                }
+            });
+        });
+    </script>
+        
+        
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.min.js"></script>
 

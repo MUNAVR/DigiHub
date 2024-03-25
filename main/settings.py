@@ -168,7 +168,7 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
-
+LOGIN_URL = '/login/' 
 # SOCIALACCOUNT_PROVIDERS = {
 #     'google': {
 #         'APP': {
@@ -185,7 +185,8 @@ SITE_ID = 1
 
 SOCIALACCOUNT_QUERY_EMAIL= True
 
-LOGIN_REDIRECT_URL = 'index'
+
+
 
 
 # email validation

@@ -2,7 +2,7 @@ from django.shortcuts import render,redirect
 from django.contrib.auth.models import User,Group
 from.models import *
 from django.contrib import messages
-# from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.core.mail import send_mail
 import random
@@ -26,7 +26,9 @@ from datetime import date
 from offers.models import ReferralOffer
 from django.db import transaction
 from wallet.models import Wallet
-
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.shortcuts import get_object_or_404
+from django.views.decorators.cache import cache_control
 
 def google_oauth_callback(request):
     return redirect("user:index")
@@ -199,6 +201,7 @@ def resend_otp(request):
     return redirect('user:verify_otp')
 
 
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def login(request):
     error_message = None  # Initialize error message
 
@@ -220,6 +223,7 @@ def login(request):
                 else:
                     if password == customer.password:
                         # Password comparison using Django's check_password function
+                        request.session['is_logged_in'] = True
                         request.session['email'] = email
                         return redirect('user:index')   
                     else:
@@ -281,40 +285,46 @@ def logout(request):
         request.session.flush()
     return redirect('user:login')
 
-
-
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def index(request):
-    # Get all active product variants with their related products, categories, brands, and attributes
+    if not request.session.get('is_logged_in', False):
+        return redirect('user:login')
     variants = Product_Variant.objects.filter(
         product__is_active=True,
         product__product_category__is_active=True,
         product__product_brand__is_active=True,
-        is_active=True  # Add condition to check if the variant itself is active
+        is_active=True
     ).select_related('product', 'product__product_category', 'product__product_brand')
 
     # Filter variants further to include only those with all active attributes
-    active_variants = []
-    for variant in variants:
-        if all(attribute.is_active for attribute in variant.attributes.all()):
-            active_variants.append(variant)
-
+    active_variants = [variant for variant in variants if all(attribute.is_active for attribute in variant.attributes.all())]
 
     # Order the active variants by sale price
     active_variants = sorted(active_variants, key=lambda x: x.sale_price, reverse=True)
+    brands = Brand.objects.filter(is_active=True)
+    # Pagination
+    paginator = Paginator(active_variants, 5)  # Show 5 variants per page
+    page_number = request.GET.get('page')
 
-    # Get the latest 4 active variants
-    new_variant=Product_Variant.objects.all().order_by('-created_at')[:4]
+    try:
+        active_variants = paginator.page(page_number)
+    except PageNotAnInteger:
+        # If page is not an integer, deliver first page.
+        active_variants = paginator.page(1)
+    except EmptyPage:
+        # If page is out of range (e.g. 9999), deliver last page of results.
+        active_variants = paginator.page(paginator.num_pages)
+
+    new_variant = Product_Variant.objects.all().order_by('-created_at')[:4]
 
     context = {
         "variant": active_variants,
         "new_variant": new_variant,
-        "count": len(active_variants)
+        "count": paginator.count,
+        "brands": brands,
     }
 
     return render(request, "user_panel/index.html", context)
-
-
-
 
 
 
@@ -359,17 +369,43 @@ def product_details(request, id):
     
     # Filter active brands
     brands = Brand.objects.filter(is_active=True)
-    
+        
     # Retrieve product variant and pass it to the template context
-    product_variant = Product_Variant.objects.filter(pk=id) 
-
-    
+    product_variant = Product_Variant.objects.get(pk=id)
+    product=product_variant.product
+    print(product)
+    all_variant=Product_Variant.objects.filter(product=product)
+   
     context = {
+        "all_variant":all_variant,  
         "variant": product_variant,
         "brands": brands,
     }
     return render(request, "user_panel/product_details.html", context)
 
+
+
+def get_product_details(request):
+    print("here")
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        variant_id = request.GET.get('variant_id')
+        print(variant_id)
+        if variant_id:
+            brands = Brand.objects.filter(is_active=True)
+            product_variant = get_object_or_404(Product_Variant, pk=variant_id)
+            product=product_variant.product
+            all_variant=Product_Variant.objects.filter(product=product)
+            context = {
+                "all_variant":all_variant,  
+                "variant": product_variant,
+                "brands": brands,
+            }
+            product_details_html = render_to_string('user_panel/product_details.html',context)
+            return JsonResponse({'product_details_html': product_details_html})
+        else:
+            return JsonResponse({'error': 'Variant ID not provided'}, status=400)
+    else:
+        return JsonResponse({'error': 'Invalid request'}, status=400)
 
 
 

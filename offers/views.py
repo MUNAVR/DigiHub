@@ -18,6 +18,9 @@ from django.utils.crypto import get_random_string
 
 
 def create_referral_offer(request):
+    if 'username' not in request.session:
+        return redirect('admin_login') 
+    
     if request.method == 'POST':
         # Extract data from the request
         referral_amount = request.POST.get('amount')
@@ -97,6 +100,9 @@ def create_referral_offer(request):
 
 
 def display_referral_offers(request):
+    if 'username' not in request.session:
+        return redirect('admin_login') 
+    
     offers = ReferralOffer.objects.all()
     print(offers)
     context={

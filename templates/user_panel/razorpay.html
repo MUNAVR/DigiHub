@@ -7,8 +7,20 @@
 </head>
 <body>
     <h1>Razorpay Payment</h1>
+    <script>
+        // Ensure response object is properly populated and passed from the server
+        var response = {{ response|safe }};
+        
+        // Check if response is not undefined and contains payment information
+        if (response && response.razorpay_payment_id && response.razorpay_payment_id >= 1) {
+            window.location.href = "{% url 'handle_razorpay_success' %}";
+        } else {
+            window.location.href = "{% url 'handle_razorpay_failure' %}";
+        }
+    </script>
+
     <!-- Display Razorpay payment form -->
-    <form action="{% url 'handle_razorpay_success' %}" method="POST">
+    <form id="razorpay-form" action="{% url 'handle_razorpay_success' %}" method="POST">
         {% csrf_token %}
         <script src="https://checkout.razorpay.com/v1/checkout.js"
                 data-key="{{ payment_details.key }}"
@@ -20,11 +32,10 @@
                 data-description="Purchase Description"
                 data-image="https://example.com/your_logo.jpg"
                 data-prefill.name="Munavar"
-                data-prefill.email="{{payment_details.email}}"
+                data-prefill.email="{{ payment_details.email }}"
                 data-theme.color="#F37254">
-                
         </script>
-        <input type="hidden" name="email" value="{{payment_details.email}}">
+        <input type="hidden" name="email" value="{{ payment_details.email }}">
         <input type="hidden" custom="Hidden Element" name="hidden">
     </form>
 </body>

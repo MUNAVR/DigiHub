@@ -19,4 +19,5 @@ class Brand(models.Model):
     name=models.CharField(max_length=15)
     category=models.ForeignKey(Category,on_delete=models.CASCADE)
     is_active = models.BooleanField(default=True)
+    offer=models.DecimalField(max_digits=5, decimal_places=2,null=True)
 

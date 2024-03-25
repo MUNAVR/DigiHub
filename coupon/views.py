@@ -6,12 +6,18 @@ from django.contrib import messages
 
 # Create your views here.
 def admin_manage_coupons(request):
+    if 'username' not in request.session:
+        return redirect('admin_login') 
+    
     coupons = Coupon.objects.all()
     return render(request, 'admin_panel/coupon_list.html', {'coupons': coupons})
 
 
 
 def admin_create_coupon(request):
+    if 'username' not in request.session:
+        return redirect('admin_login') 
+    
     if request.method == 'POST':
         code = request.POST.get('code')
         discount = request.POST.get('discount')
@@ -79,5 +85,5 @@ def change_active(request, coupon_id):
     coupon.active = not coupon.active
     coupon.save()
     status = "activated" if coupon.active else "deactivated"
-    messages.success(request, f"Referral offer {status} successfully.")
+    messages.success(request, f"Coupon  {status} successfully.")
     return redirect('coupen_list') 

@@ -6,7 +6,7 @@ from checkout.models import Order
 from django.urls import reverse
 from django.http import JsonResponse
 from products.models import Product_Variant,Products
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta,time
 from django.db.models import Sum
 from datetime import datetime
 from django.http import HttpResponse
@@ -19,10 +19,13 @@ from datetime import date
 from django.utils import timezone
 import xlsxwriter
 from io import BytesIO
-
+from coupon.models import Coupon,CouponUsage
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.cache import cache_control
    
 
 # Create your views here.
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def admin_login(request):
     if 'username' in request.session:
         return redirect('admin_index')
@@ -47,9 +50,10 @@ def admin_logout(request):
         request.session.flush()
     return redirect('admin_login')
 
-
-
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def admin_index(request):
+    if 'username' not in request.session:
+        return redirect('admin_login')
     total_order = Order.objects.count()
     total_product = Products.objects.count()
     total_product_variant = Product_Variant.objects.count()
@@ -99,34 +103,59 @@ def calculate_total_earnings():
     return total_earnings
 
 
-   
+
+
 class SalesReportView(View):
     def generate_report(self, start_date, end_date):
         # For daily report
         if start_date == end_date:
-            daily_orders = Order.objects.filter(order_date=start_date)
+            start_of_day = datetime.combine(start_date.date(), time.min)  # Beginning of the day
+            end_of_day = datetime.combine(start_date.date(), time.max)  # End of the day
+
+            daily_orders = Order.objects.filter(order_date__range=(start_of_day, end_of_day))
             daily_revenue = daily_orders.filter(order_status="Completed").aggregate(Sum('total_amount'))['total_amount__sum'] or 0
             daily_cancelled_orders = daily_orders.filter(order_status="Cancelled").count()
-            
+
+            # Calculate total discount amount and discount count for the day
+            daily_discount_amount = (CouponUsage.objects.filter(date_used__date=start_date).aggregate(Sum('coupon__discount'))['coupon__discount__sum'] or 0) * daily_revenue / 100
+            daily_discount_count = Coupon.objects.all().count()
+
             params = {
+                "orders":daily_orders,
                 'daily_orders_count': daily_orders.count(),
                 'daily_revenue': daily_revenue,
                 'daily_cancelled_orders': daily_cancelled_orders,
+                'daily_discount_amount': daily_discount_amount,
+                'daily_discount_count': daily_discount_count,
             }
 
         # For weekly report
         elif (end_date - start_date).days == 6:
-            weekly_start_date = start_date
-            weekly_end_date = end_date
-            weekly_orders = Order.objects.filter(order_date__range=[weekly_start_date, weekly_end_date])
-            weekly_revenue = weekly_orders.filter(order_status="Completed").aggregate(Sum('total_amount'))['total_amount__sum'] or 0
+
+            weekly_orders =Order.objects.filter(order_date__range=[start_date, end_date])
+            completed_weekly_orders = weekly_orders.filter(order_status="Completed")
+            # Calculate weekly revenue
+            weekly_revenue = completed_weekly_orders.aggregate(total_revenue=Sum('total_amount'))['total_revenue'] or 0
             weekly_cancelled_orders = weekly_orders.filter(order_status="Cancelled").count()
+            
+            # Calculate weekly discount amount
+           
+            discount_sum = CouponUsage.objects.filter(date_used__date=start_date).aggregate(Sum('coupon__discount'))['coupon__discount__sum'] or 0
+            weekly_discount_amount = round((discount_sum * weekly_revenue / 100), 2)
+
+            # Calculate weekly discount count
+            weekly_discount_count = Coupon.objects.all().count()
+    
 
             params = {
+                "orders":weekly_orders,
                 'weekly_orders_count': weekly_orders.count(),
                 'weekly_revenue': weekly_revenue,
                 'weekly_cancelled_orders': weekly_cancelled_orders,
+                'weekly_discount_amount': weekly_discount_amount,
+                'weekly_discount_count': weekly_discount_count
             }
+
 
         # For yearly report
         elif start_date.year == end_date.year:
@@ -134,23 +163,35 @@ class SalesReportView(View):
             yearly_revenue = yearly_orders.filter(order_status="Completed").aggregate(Sum('total_amount'))['total_amount__sum'] or 0
             yearly_cancelled_orders = yearly_orders.filter(order_status="Cancelled").count()
 
+            yearly_discount_amount = round((CouponUsage.objects.filter(date_used__year=start_date.year).aggregate(Sum('coupon__discount'))['coupon__discount__sum'] or 0) * yearly_revenue / 100, 2)
+            yearly_discount_count = Coupon.objects.all().count()
+
             params = {
+                "orders":yearly_orders,
                 'yearly_orders_count': yearly_orders.count(),
                 'yearly_revenue': yearly_revenue,
                 'yearly_cancelled_orders': yearly_cancelled_orders,
+                'yearly_discount_amount': yearly_discount_amount,
+                'yearly_discount_count': yearly_discount_count,
             }
         
         else:
-                # Handle custom date range here
-                custom_orders = Order.objects.filter(order_date__range=[start_date, end_date])
-                custom_revenue = custom_orders.filter(order_status="Completed").aggregate(Sum('total_amount'))['total_amount__sum'] or 0
-                custom_cancelled_orders = custom_orders.filter(order_status="Cancelled").count()
+            # Handle custom date range here
+            custom_orders = Order.objects.filter(order_date__range=[start_date, end_date])
+            custom_revenue = custom_orders.filter(order_status="Completed").aggregate(Sum('total_amount'))['total_amount__sum'] or 0
+            custom_cancelled_orders = custom_orders.filter(order_status="Cancelled").count()
 
-                params = {
-                    'custom_orders_count': custom_orders.count(),
-                    'custom_revenue': custom_revenue,
-                    'custom_cancelled_orders': custom_cancelled_orders,
-                }
+            custom_discount_amount = (CouponUsage.objects.filter(date_used__range=[start_date, end_date]).aggregate(Sum('coupon__discount'))['coupon__discount__sum'] or 0) * custom_revenue / 100
+            custom_discount_count = Coupon.objects.all().count()
+
+            params = {
+                "orders":custom_orders,
+                'custom_orders_count': custom_orders.count(),
+                'custom_revenue': custom_revenue,
+                'custom_cancelled_orders': custom_cancelled_orders,
+                'custom_discount_amount': custom_discount_amount,
+                'custom_discount_count': custom_discount_count,
+            }
 
         return params
 
@@ -158,55 +199,55 @@ class SalesReportView(View):
         template = get_template('admin_panel/sales_report.html')
         html = template.render(context)
         pdf_file = BytesIO()
-        pisa.pisaDocument(BytesIO(html.encode("UTF-8")), pdf_file)
+        pisa.pisaDocument(BytesIO(html.encode("UTF-8")), pdf_file, encoding='UTF-8')
         return pdf_file.getvalue()
 
     def render_to_excel(self, context):
-        workbook = xlsxwriter.Workbook(BytesIO())
+        output = BytesIO()  # Use BytesIO to write to memory instead of a file
+
+        workbook = xlsxwriter.Workbook(output, {'remove_timezone': True})  # Set remove_timezone option
         worksheet = workbook.add_worksheet('Sales Report')
 
+        # Retrieve queryset data
+        orders = context['orders']  # Assuming 'orders' is a queryset of Order objects
+
         # Write headers
-        headers = list(context.keys())
+        headers = ['Order ID', 'Order Date', 'Total Amount', 'Order Status']  # Adjust these according to your model fields
         for col, header in enumerate(headers):
             worksheet.write(0, col, header)
 
         # Write data
-        data = list(context.values())
-        for row, row_data in enumerate(data, start=1):
-            # Ensure row_data is iterable
-            if not isinstance(row_data, (list, tuple)):
-                row_data = [row_data]  # Convert to list if not already iterable
-            for col, value in enumerate(row_data):
-                worksheet.write(row, col, value)
+        for row, order in enumerate(orders, start=1):
+            worksheet.write(row, 0, order.id)  # Assuming 'id' is the field representing Order ID
+            worksheet.write(row, 1, order.order_date.replace(tzinfo=None))  # Remove timezone from datetime
+            worksheet.write(row, 2, order.total_amount)  # Assuming 'total_amount' is the field representing Total Amount
+            worksheet.write(row, 3, order.order_status)  # Assuming 'order_status' is the field representing Order Status
 
         workbook.close()
-        return workbook.filename
+        output.seek(0)  # Reset BytesIO pointer to beginning
+        return output.getvalue()
 
-
-
+ 
     def get(self, request, *args, **kwargs):
         report_type = request.GET.get('report_type', 'daily')
         report_format = request.GET.get('format', 'pdf')
         
-        # Validate report type
-        if report_type not in ['daily', 'weekly', 'monthly']:
-            return HttpResponse("Invalid report type", status=400)
-        
-        # Validate report format
-        if report_format not in ['pdf', 'excel']:
-            return HttpResponse("Invalid report format", status=400)
 
         # Handle report generation based on both factors
         if report_type == 'daily':
-            start_date = datetime.now().date()
+            start_date = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
             end_date = start_date
         elif report_type == 'weekly':
-            end_date = datetime.now().date()
+            end_date = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
             start_date = end_date - timedelta(days=6)
         elif report_type == 'monthly':
-            end_date = datetime.now().date()
-            start_date = datetime(end_date.year, end_date.month, 1).date()
-        
+            end_date = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+            start_date = datetime(end_date.year, end_date.month, 1)
+
+        # Convert start_date and end_date to timezone-aware datetime objects
+        start_date = timezone.make_aware(start_date)
+        end_date = timezone.make_aware(end_date)
+
         context = self.generate_report(start_date, end_date)
 
         if report_format == 'pdf':
@@ -215,16 +256,17 @@ class SalesReportView(View):
             filename = "sales_report.pdf"
         else:  # report_format == 'excel'
             excel_content = self.render_to_excel(context)
-            response = HttpResponse(excel_content.getvalue(), content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+            response = HttpResponse(excel_content, content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
             filename = "sales_report.xlsx"
 
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
         return response
 
 
-    
 
-def customer(request):  
+def customer(request):
+    if 'username' not in request.session:
+        return redirect('admin_login')  
     data=Customers.objects.all()
     context={
         "datas":data
@@ -232,6 +274,8 @@ def customer(request):
     return render (request,"admin_panel/customer.html",context)
 
 def customer_edit(request,id):
+    if 'username' not in request.session:
+        return redirect('admin_login')
     data=Customers.objects.get(id=id)
     context={"data":data}
     if request.method =='POST':
@@ -251,12 +295,16 @@ def customer_edit(request,id):
     return render(request,"admin_panel/customer_edit.html",context)
 
 def customer_delete(request,id):
+    if 'username' not in request.session:
+        return redirect('admin_login') 
     data=Customers.objects.get(id=id)
     data.delete()
     return redirect('customer')
 
 
 def block_user(request, id):
+    if 'username' not in request.session:
+        return redirect('admin_login') 
     if request.method == 'POST':
         user = Customers.objects.get(id=id)
         user.is_blocked = True
@@ -266,6 +314,8 @@ def block_user(request, id):
         return JsonResponse({'success': False})
 
 def unblock_user(request, id):
+    if 'username' not in request.session:
+        return redirect('admin_login') 
     if request.method == 'POST':
         user = Customers.objects.get(id=id)
         user.is_blocked = False
@@ -276,13 +326,22 @@ def unblock_user(request, id):
 
 
 
-def order_list(request):
+from django.core.paginator import Paginator
 
-    order = Order.objects.all().order_by('-order_date')
-    context={
-        "order":order
+def order_list(request):
+    if 'username' not in request.session:
+        return redirect('admin_login') 
+    order_list = Order.objects.all().order_by('-order_date')
+    
+    paginator = Paginator(order_list, 10)  # Show 10 orders per page
+
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'page_obj': page_obj
     }
-    return render(request,"admin_panel/order_list.html",context)
+    return render(request, "admin_panel/order_list.html", context)
 
 def cancel_orderAdmin(request, order_id):
     try:
@@ -306,24 +365,35 @@ def cancel_orderAdmin(request, order_id):
 
 
 def change_status(request, order_id):
+    if 'username' not in request.session:
+        return redirect('admin_login') 
     if request.method == 'GET':
         new_status = request.GET.get('new_status')
-        # Assuming you have a model named Order with a field named status
         order = Order.objects.get(id=order_id)
-        valid_status_options = ['Pending', 'Shipped', 'Completed']
-        # Checking the new_status against valid status options (case-insensitive and trimmed)
-        if new_status.strip().title() in valid_status_options:
-            # Capitalize the status
-            new_status_title = new_status.strip().title()
-            order.order_status = new_status_title
-            # Save the delivery date if the new status is 'Completed'
-            if new_status_title == 'Completed':
-                order.delivery_date = datetime.now()
-            order.save()
-            # Adding success message
-            messages.success(request, 'Status changed successfully.')
+        
+        # If the order is already canceled or returned, do not change the status
+        if order.order_status in ['Cancelled', 'Returned']:
+            messages.error(request, 'Order status cannot be changed as it is already cancelled or returned.')
         else:
-            # Adding error message for invalid status
-            messages.error(request, 'Invalid status provided.')
+            valid_status_options = ['Pending', 'Shipped', 'Completed']
+            # Checking the new_status against valid status options (case-insensitive and trimmed)
+            if new_status.strip().title() in valid_status_options:
+                # Capitalize the status
+                new_status_title = new_status.strip().title()
+                # Only change the status if the new status is different from the current status
+                if order.order_status != new_status_title:
+                    order.order_status = new_status_title
+                    # Save the delivery date if the new status is 'Completed'
+                    if new_status_title == 'Completed':
+                        order.delivery_date = datetime.now()
+                    order.save()
+                    # Adding success message
+                    messages.success(request, 'Status changed successfully.')
+                else:
+                    messages.info(request, 'Order is already in the specified status.')
+            else:
+                # Adding error message for invalid status
+                messages.error(request, 'Invalid status provided.')
+
     # Redirecting back to the same page or any desired page after status change
     return redirect(reverse('order_list'))

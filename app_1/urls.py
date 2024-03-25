@@ -15,6 +15,8 @@ urlpatterns = [
     path('verify_otp',views.verify_otp,name="verify_otp"),
     path('resend_otp',views.resend_otp,name="otp"),
     path('product_details/<id>',views.product_details,name="product_details"),
+    path('get_product_details',views.get_product_details, name='get_product_details'),
+
     
 
 

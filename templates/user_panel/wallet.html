@@ -1,3 +1,4 @@
+<!-- wallet.html -->
 {% extends 'user_panel/base.html' %}
 {% load static %}
 
@@ -31,7 +32,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% for transaction in transactions %}
+                            {% for transaction in page_obj %}
                             <tr>
                                 <td>{{ transaction.date_created }}</td>
                                 <td>{{ transaction.transaction_type }}</td>
@@ -42,6 +43,24 @@
                     </table> <!-- table-responsive.// -->
                 </div>
             </div> <!-- card-body end// -->
+        </div>
+        <!-- Pagination links -->
+        <div class="pagination">
+            <span class="step-links">
+                {% if page_obj.has_previous %}
+                    <a href="?page=1">&laquo; first</a>
+                    <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+                {% endif %}
+
+                <span class="current">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+                </span>
+
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}">next</a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+                {% endif %}
+            </span>
         </div>
     </body>
     <script>

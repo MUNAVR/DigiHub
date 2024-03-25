@@ -4,12 +4,12 @@
 {% block title %}product details{% endblock %}
 
 {% block content %}
+<div id="product-details-container">
     <main class="main">
         <div class="page-header breadcrumb-wrap">
             <div class="container">
                 <div class="breadcrumb">
                     <a href="{% url 'user:index' %}" rel="nofollow">Home</a>
-                    <span></span> Shop
                     <span></span> product detail
                 </div>
             </div>
@@ -18,9 +18,7 @@
             <div class="container">
                 <div class="row flex-row-reverse">
                     <div class="col-lg-9">
-                        <div class="product-detail accordion-detail">
-                            {% for variant in variant %}
-                            {% for attribute_value in variant.attributes.all %}
+                        <div class="product-detail accordion-detail" >
                             <div class="row mb-50">
                                 <div class="col-md-6 col-sm-12 col-xs-12">
                                     <div class="detail-gallery">
@@ -51,8 +49,13 @@
                                         <h2 class="title-detail">{{variant.product.product_name}}</h2>
                                         <div class="product-detail-rating">
                                             <div class="pro-details-brand">
-                                                <span> Brand: <a href="shop-grid-right.html">{{variant.product.product_brand.name}}</a></span>
+                                                <span> Brand: <a href="shop-grid-right.html">{{ variant.product.product_brand.name }}</a>
+                                                    {% if variant.product.product_brand.offer %}
+                                                        &nbsp;{{ variant.product.product_brand.offer }}% off
+                                                    {% endif %}
+                                                </span>
                                             </div>
+                                            
                                             <div class="product-rate-cover text-end">
                                                 <div class="product-rate d-inline-block">
                                                     <div class="product-rating" style="width:90%">
@@ -73,7 +76,7 @@
                                         <div class="bt-1 border-color-1 mt-15 mb-15"></div>
                                         <div class="product_sort_info font-xs mb-30">
                                             <ul>
-                                                <li class="mb-10"><i class="fi-rs-crown mr-5"></i> RAM: {{ attribute_value.attribute_ram }}</li>
+                                                {% comment %} <li class="mb-10"><i class="fi-rs-crown mr-5"></i> RAM: {{ attribute_value.attribute_ram }}</li> {% endcomment %}
                                                 <li class="mb-10"><i class="fi-rs-crown mr-5" id="product-rom"></i> RAM: {{ variant.rom }}</li>
                                                 <li class="mb-10"><i class="fi-rs-refresh mr-5"></i> DISPLAY: {{ variant.product.display }}</li>
                                                 <li><i class="fi-rs-credit-card mr-5"></i> CAMERA: {{ variant.product.camera }}</li>
@@ -84,71 +87,20 @@
                                         </div>
                                         
                                         <div class="attr-detail attr-rom mb-15">
-                                            <strong class="mr-10">ROM</strong>
+                                            <strong class="mr-10">Variants</strong>
+                                            {% for variant in all_variant %}
                                             <div class="rom-options">
-                                                
-                                                <div class="rom-option active" ><a href="#" data-rom="128GB">128GB</a></div>
-                                                <div class="rom-option"><a href="#" data-rom="256GB">256GB</a></div>
-                                                <div class="rom-option"><a href="#" data-rom="512GB">512GB</a></div>
-                                                <div class="rom-option"><a href="#" data-rom="1TB">1TB</a></div>
+                                                {% for attribute in variant.attributes.all %}
+                                                <div class="rom-option">
+                                                    <a href="#" class="variant-link" data-variant="{{ variant.id }}">
+                                                        {{ attribute.attribute_color }}: {{ attribute.attribute_ram }}
+                                                    </a>
+                                                </div>
+                                                {% endfor %}
                                             </div>
+                                            {% endfor %}
                                         </div>
-                                        <input type="hidden" id="selected-rom" name="selected_rom">
 
-                                        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-                                        <script>
-                                            $(document).ready(function() {
-                                                $('.rom-option').click(function(e) {
-                                                    e.preventDefault();
-                                                    var selectedROM = $(this).find('a').data('rom');    
-                                                    var priceElement = $('#product-price');
-                                                    var romElement = $('#product-rom');
-                                            
-                                                    // Update price and ROM elements
-                                                    var romPrices = {
-                                                        '128GB': {{variant.sale_price}}.toFixed(2),
-                                                        '256GB': ({{variant.sale_price}} + 2500).toFixed(2),
-                                                        '512GB': ({{variant.sale_price}} + 4000).toFixed(2),
-                                                        '1TB': ({{variant.sale_price}} + 10000).toFixed(2),
-                                                    };
-                                            
-                                                    priceElement.text('₹' + romPrices[selectedROM]);
-                                                    romElement.text(selectedROM);
-                                                });
-                                                function addToCart() {
-                                                    // Get the selected ROM from the hidden input field
-                                                    var selectedROM = $('#product-rom').text();
-                                                    
-                                                    // Get the selected ROM price
-                                                    var selectedROMPrice = $('#product-price').text(); // Assuming the price is displayed in the same element as the ROM
-                                                    
-                                                    // Include the selected ROM and its price in the form data
-                                                    var formData = {
-                                                        // Include other form data if any
-                                                        selected_rom: selectedROM,
-                                                        selected_rom_price: selectedROMPrice
-                                                    };
-                                                    
-                                                    // Send the form data to the server using AJAX or by submitting a form
-                                                    // Example using AJAX
-                                                    $.ajax({
-                                                        type: 'POST',
-                                                        url: '/add_to_cart/',  // Adjust the URL to your add to cart endpoint
-                                                        data: formData,
-                                                        success: function(response) {
-                                                            // Handle success response
-                                                        },
-                                                        error: function(xhr, textStatus, errorThrown) {
-                                                            // Handle error
-                                                        }
-                                                    });
-                                                }
-                                                
-                                            });
-                                            </script>
-                                            
-                                    
                                         <div class="bt-1 border-color-1 mt-30 mb-30"></div>
                                         <div class="detail-extralink">
                                             <div class="product-extra-link2">
@@ -342,8 +294,7 @@
                                     </div>
                                 </div>
                             </div>
-                                {% endfor %}
-                                {% endfor %}
+                               
                         </div>
                     </div>
                     <div class="col-lg-3 primary-sidebar sticky-sidebar">
@@ -351,14 +302,51 @@
                             <h5 class="section-title style-1 mb-30 wow fadeIn animated">Brands</h5>
                             <ul class="categories">
                                 {% for brand in brands %}
-                                <li><a href="#">{{ brand.name }}</a></li>
+                                    {% if brand.offer %}
+                                        <li><a href="#">{{ brand.name }}, {{ brand.offer }}% off</a></li>
+                                    {% else %}
+                                        <li><a href="#">{{ brand.name }}</a></li>
+                                    {% endif %}
                                 {% endfor %}
                             </ul>
                         </div>
                     </div>
-                    
                 </div>
             </div>
         </section>
     </main>
+</div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('.variant-link').click(function(e) {
+                e.preventDefault();
+                var variantId = $(this).data('variant');
+                console.log('Variant ID:', variantId); // Log the variant ID
+                
+                $.ajax({
+                    type: 'GET',
+                    url: '{% url "user:get_product_details" %}',
+                    data: {
+                        'variant_id': variantId
+                    },
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest' // Set X-Requested-With header
+                    },
+                    success: function(response) {
+                        console.log('AJAX Success:', response); // Log the response
+                        // Handle successful response
+                        // You can update the product details container with the response
+                        $('#product-details-container').html(response.product_details_html);
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('AJAX Error:', error); // Log the error
+                        // Handle error
+                    }
+                });
+            });
+        });
+    </script>
+    
+    
     {% endblock %}

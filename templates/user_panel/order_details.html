@@ -1,141 +1,146 @@
 {% extends 'user_panel/base.html' %}
 {% load static %}
 
-{% block title %}order details{% endblock %}
+{% block title %}Order Details{% endblock %}
 
 {% block content %}
 <div class="page-header breadcrumb-wrap">
     <div class="container">
         <div class="breadcrumb">
             <a href="{% url 'user:index' %}" rel="nofollow">Home</a>
-            <span></span> profile
-            <span></span> order list
-            <span></span> order detail
+            <span></span> Profile
+            <span></span> Order List
+            <span></span> Order Detail
         </div>
     </div>
 </div>
 <br>
-        <section class="content-main">
-            <div class="content-header">
-                <div>
-                    <center>
-                        <h2 class="content-title card-title">Order detail</h2>
-                    </center>  
+<section class="content-main">
+    <div class="content-header">
+        <div>
+            <center>
+                <h2 class="content-title card-title">Order Detail</h2>
+            </center>  
+        </div>
+    </div>
+    <div class="card">
+        <header class="card-header">
+            <div class="row align-items-center">
+                <div class="col-lg-6 col-md-6 mb-lg-0 mb-15">
+                    <span>
+                        <i class="material-icons md-calendar_today"></i> <b>Wed, Aug 13, 2020, 4:34PM</b>
+                    </span> <br>
+                    <small class="text-muted">Order ID: {{ order.id }}</small>
                 </div>
             </div>
-            <div class="card">
-                <header class="card-header">
-                    <div class="row align-items-center">
-                        <div class="col-lg-6 col-md-6 mb-lg-0 mb-15">
-                            <span>
-                                <i class="material-icons md-calendar_today"></i> <b>Wed, Aug 13, 2020, 4:34PM</b>
-                            </span> <br>
-                            <small class="text-muted">Order ID: {{order.id}}</small>
+        </header> <!-- card-header end// -->
+        <div class="card-body">
+            <div class="row mb-50 mt-20 order-info-wrap">
+                <!-- Customer Info -->
+                <div class="col-md-4">
+                    <article class="icontext align-items-start">
+                        <span class="icon icon-sm rounded-circle bg-primary-light">
+                            <i class="text-primary material-icons md-person"></i>
+                        </span>
+                        <div class="text">
+                            <h6 class="mb-1">Customer</h6>
+                            <p class="mb-1">
+                                {{ user.first_name }}<br> {{ user.email }}<br>{{ user.phone }}
+                            </p>
                         </div>
-                    </div>
-                </header> <!-- card-header end// -->
-                <div class="card-body">
-                    <div class="row mb-50 mt-20 order-info-wrap">
-                        <div class="col-md-4">
-                            <article class="icontext align-items-start">
-                                <span class="icon icon-sm rounded-circle bg-primary-light">
-                                    <i class="text-primary material-icons md-person"></i>
-                                </span>
-                                <div class="text">
-                                    <h6 class="mb-1">Customer</h6>
-                                    <p class="mb-1">
-                                        {{user.first_name}}<br> {{user.email}}<br>{{user.phone}}
-                                    </p>
-                                </div>
-                            </article>
-                        </div> <!-- col// -->
-                        <div class="col-md-4">
-                            <article class="icontext align-items-start">
-                                <span class="icon icon-sm rounded-circle bg-primary-light">
-                                    <i class="text-primary material-icons md-local_shipping"></i>
-                                </span>
-                                <div class="text">
-                                    <h6 class="mb-1">Order info</h6>
-                                    <p class="mb-1">
-                                        Shipping: Fargo express <br> Pay method: Cash On Delivery<br> Status: new
-                                    </p>
-                                    {% comment %} <a href="#">Download info</a> {% endcomment %}
-                                </div>
-                            </article>
-                        </div> <!-- col// -->
-                        <div class="col-md-4">
-                            <article class="icontext align-items-start">
-                                <span class="icon icon-sm rounded-circle bg-primary-light">
-                                    <i class="text-primary material-icons md-place"></i>
-                                </span>
-                                <div class="text">
-                                    <h6 class="mb-1">Deliver to</h6>
-                                    <p class="mb-1">
-                                        City:{{ add.locality }} <br>{{ add.address }}<br>{{ add.pincode }}<br>{{ add.district }},{{add.state}}
-                                    </p>
-                                    {% comment %} <a href="#">View profile</a> {% endcomment %}
-                                </div>
-                            </article>
-                        </div> <!-- col// -->
-                    </div> <!-- row // -->
-                    <div class="row">
-                        <div class="col-lg-7">
-                            <div class="table-responsive">
-                                <table class="table">
-                                    <thead>
-                                        {% comment %} <tr>
-                                            <th width="40%">Product</th>
-                                            <th width="20%">Unit Price</th>
-                                            <th width="20%">Quantity</th>
-                                        </tr> {% endcomment %}
-                                    </thead>
-                                    <tbody>
-                                        {% for item in items %}
-                                        <tr>
-                                            <td>
-                                                <a class="itemside" href="#">
-                                                    <div class="left">
-                                                        <img src="{{item.cart.product_variant.thumbnail_image.url}}" width="40" height="40" class="img-xs" alt="Item">
-                                                    </div>
-                                                    <div class="info">{{itme.cart.product_variant.product.product_name}}</div>
-                                                </a>
-                                            </td>
-                                            <td>₹ {{item.cart.product_variant.sale_price}}</td>
-                                            <td>X {{item.cart.quantity}}</td>
-                                        </tr>
-                                        {% endfor %}
-                                        <tr>
-                                            <td colspan="4">
-                                                <div class="pricing-status">
-                                                    <div class="pricing">
-                                                        <div class="item">
-                                                            <span class="title">Subtotal:</span>
-                                                            <span class="value">₹ {{checkout.subtotal}}</span>
-                                                        </div>
-                                                        <div class="item">
-                                                            <span class="title">Shipping cost:</span>
-                                                            <span class="value">₹ 100</span>
-                                                        </div>
-                                                        <div class="item">
-                                                            <span class="title">Grand total:</span>
-                                                            <span class="value">₹ {{ order.total_amount }}</span>
-                                                        </div>
-                                                    </div>
-                                                    <div class="status">
-                                                        <span class="title text-muted">Status:</span>
-                                                        <span class="badge rounded-pill alert-success text-success">Payment Pending</span>
-                                                    </div>
+                    </article>
+                </div> <!-- col// -->
+                <!-- Order Info -->
+                <div class="col-md-4">
+                    <article class="icontext align-items-start">
+                        <span class="icon icon-sm rounded-circle bg-primary-light">
+                            <i class="text-primary material-icons md-local_shipping"></i>
+                        </span>
+                        <div class="text">
+                            <h6 class="mb-1">Order info</h6>
+                            <p class="mb-1">
+                                Shipping: Fargo express <br>Based on Kochi<br>Kerala
+                            </p>
+                        </div>
+                    </article>
+                </div> <!-- col// -->
+                <!-- Delivery Address -->
+                <div class="col-md-4">
+                    <article class="icontext align-items-start">
+                        <span class="icon icon-sm rounded-circle bg-primary-light">
+                            <i class="text-primary material-icons md-place"></i>
+                        </span>
+                        <div class="text">
+                            <h6 class="mb-1">Deliver to</h6>
+                            <p class="mb-1">
+                                City: {{ add.locality }} <br>{{ add.address }}<br>{{ add.pincode }}<br>{{ add.district }},{{ add.state }}
+                            </p>
+                        </div>
+                    </article>
+                </div> <!-- col// -->
+            </div> <!-- row // -->
+            <!-- Order Products -->
+            <div class="row">
+                <div class="col-lg-7">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th width="40%">Product</th>
+                                    <th width="20%">Unit Price</th>
+                                    <th width="20%">Quantity</th>
+                                </tr> 
+                            </thead>
+                            <tbody>
+                                {% for product in product %}
+                                <tr>
+                                    <td>
+                                        <a class="itemside" href="#">
+                                            <div class="info">{{ product.product_name}}</div>
+                                        </a>
+                                    </td>
+                                    <td>₹ {{ product.price }}</td>
+                                    <td>X {{ product.quantity }}</td>
+                                </tr>
+                                {% endfor %}
+                                <!-- Total and Status -->
+                                <tr>
+                                    <td colspan="4">
+                                        <div class="pricing-status">
+                                            <div class="pricing">
+                                                <div class="item">
+                                                    <span class="title">Subtotal:</span>
+                                                    <span class="value">₹ {{ order.subtotal}}</span>
                                                 </div>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div> <!-- table-responsive// -->
-                        </div> <!-- col// -->
-                        <div class="col-lg-1"></div>
-                    </div>
-                    
-                </div> <!-- card-body end// -->
-            </div> <!-- card end// -->
-        </section> <!-- content-main end// -->
-        {% endblock %}
+                                                <div class="item">
+                                                    <span class="title">Shipping cost:</span>
+                                                    <span class="value">₹ 100</span>
+                                                </div>
+                                                {% if order.coupon %}
+                                                <div class="item">
+                                                    <span class="title">Coupon used:</span>
+                                                    <span class="value">{{ order.coupon }}</span>
+                                                </div>
+                                                {% endif %}
+                                                <div class="item">
+                                                    <span class="title">Grand total:</span>
+                                                    <span class="value">₹ {{ order.total_amount }}</span>
+                                                </div>
+                                            </div>
+                                            <div class="status">
+                                                <span class="title text-muted">Status:</span>
+                                                <span class="badge rounded-pill alert-success text-success">{{order.payment_status}}</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div> <!-- table-responsive// -->
+                </div> <!-- col// -->
+                <div class="col-lg-1"></div>
+            </div>
+        </div> <!-- card-body end// -->
+    </div> <!-- card end// -->
+</section> <!-- content-main end// -->
+{% endblock %}

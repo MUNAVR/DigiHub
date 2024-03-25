@@ -4,6 +4,8 @@ from django.contrib import messages
 
 # Create your views here.
 def category(request):
+    if 'username' not in request.session:
+        return redirect('admin_login') 
     if request.method =='POST':
         category_name = request.POST. get('name')
         cat=Category(name = category_name)
@@ -15,6 +17,8 @@ def category(request):
     return render(request,"admin_panel/categories.html",context)
 
 def category_edit(request,id):
+    if 'username' not in request.session:
+        return redirect('admin_login') 
     categories = Category.objects.get(id = id)
     context={"obj":categories}
     if request.method == 'POST':
@@ -35,9 +39,13 @@ def category_delete(request,id):
 # Brands----------------------------------------------------------------------------------
 
 def brands_manage(request):
+    if 'username' not in request.session:
+        return redirect('admin_login') 
     if request.method == 'POST':
         name = request.POST.get('name')
         category_id = request.POST.get('category')
+        offer_percentage=request.POST.get('offer_percentage')
+
         category = Category.objects.get(id=category_id)
 
         # Perform custom validation
@@ -106,11 +114,22 @@ def brands_manage(request):
                 "error_message": error_message
             }
             return render(request, "admin_panel/brands.html", context)
+        
         else:
-            brand = Brand(name=name, category=category)
-            brand.save()
-            messages.success(request, ' Create successfully.')
-            return redirect('admin_brands')
+            if offer_percentage:
+                if not offer_percentage.isdigit() or int(offer_percentage) < 1 or int(offer_percentage) > 100:
+                    error_message = 'Offer percentage must be a number between 1 and 100.'
+                else:
+                    brand = Brand(name=name, category=category, offer=offer_percentage)
+                    brand.save()
+                    messages.success(request, 'Brand created successfully.')
+                    return redirect('admin_brands')
+        
+            else:
+                brand = Brand(name=name, category=category)
+                brand.save()
+                messages.success(request, 'Brand created successfully.')
+                return redirect('admin_brands')
 
     brands = Brand.objects.all()
     categories = Category.objects.filter(is_active = True)
@@ -121,6 +140,9 @@ def brands_manage(request):
     return render(request, "admin_panel/brands.html", context)
 
 def brand_edit(request, id):
+    if 'username' not in request.session:
+        return redirect('admin_login') 
+    
     brand = Brand.objects.get(id=id)
     categories = Category.objects.all()
 

@@ -71,14 +71,9 @@
             <p><strong>Order Number:</strong> {{order.id}}</p>
             <p><strong>Order Date:</strong> {{ order.order_date }}</p>
             <p><strong>Total Amount:</strong>  ₹  {{ total_amount }}</p>
-            <p><strong>Shipping Address:</strong></p>
-            <p>{{ add.locality }}</p>
-            <p>{{ add.address }}</p>
-            <p>{{ add.pincode }}</p>
-            <p>{{ add.district }}</p>
         </div>
 
-        <a href="{% url 'user:index' %}" class="btn">Continue Shopping</a>
+        <a href="{% url 'continue_shoping' order.id %}" class="btn">Continue Shopping</a>
     </div>
 </body>
 </html>
