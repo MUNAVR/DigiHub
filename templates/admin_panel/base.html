@@ -3,10 +3,9 @@
 <html lang="en">
 
 
-<!-- Mirrored from wp.alithemes.com/html/evara/evara-backend/index.html by HTTrack Website Copier/3.x [XR&CO'2014], Sun, 01 Aug 2021 15:32:35 GMT -->
 <head>
     <meta charset="utf-8">
-    <title>Evara Dashboard</title>
+    <title>DigiHub Adminpage</title>
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -14,9 +13,9 @@
     <meta property="og:type" content="">
     <meta property="og:url" content="">
     <meta property="og:image" content="">
-    <!-- Favicon -->
-    <link rel="shortcut icon" type="image/x-icon" href="{% static 'admin/assets/imgs/theme/favicon.svg' %}">
-    <!-- Template CSS -->
+    
+    {% comment %} <link rel="shortcut icon" type="image/x-icon" href="{% static 'admin/assets/imgs/theme/favicon.svg' %}"> {% endcomment %}
+    
     <link href="{% static 'admin/assets/css/main.css' %}" rel="stylesheet" type="text/css" />
     <title>{% block title %}My Site{% endblock %}</title>
 </head>
@@ -54,7 +53,6 @@
                         <h6>Variants</h6>
                         <a href="{% url 'product_attributes' %}">Attributes</a>
                         <a href="{% url 'variant_add' %}">Add Variant</a>
-                        {% comment %} <a href="{% url 'product_grid' %}">Product grid</a> {% endcomment %}
                         <a href="{% url 'variant_list' %}">variant list</a>
                     </div>
                 </li>
@@ -84,6 +82,15 @@
                     <div class="submenu">
                         <a href="{% url 'order_list' %}">Order list</a>
                     </div>
+                </li>
+                <li class="menu-item has-submenu">
+                    <a class="menu-link" href="page-orders-1.html"> <i class="icon material-icons md-shopping_cart"></i>
+                        <span class="text">Best Selling</span>
+                    </a>
+                    <div class="submenu">
+                        <a href="{% url 'best_selling_product' %}">Product</a>
+                        <a href="{% url 'best_selling_brand' %}">Brand</a>
+                    </div>
                 </li> 
                 
                 <li class="menu-item has-submenu">
@@ -94,57 +101,9 @@
                         <a href="{% url 'admin_logout' %}">Logout</a>
                     </div>
                 </li>
-                <!-- <li class="menu-item has-submenu">
-                    <a class="menu-link" href="page-transactions-1.html"> <i class="icon material-icons md-monetization_on"></i>
-                        <span class="text">Transactions</span>
-                    </a>
-                    <div class="submenu">
-                        <a href="page-transactions-1.html">Transaction 1</a>
-                        <a href="page-transactions-2.html">Transaction 2</a>
-                    </div>
-                </li> -->
-                <!-- <li class="menu-item has-submenu">
-                    <a class="menu-link" href="#"> <i class="icon material-icons md-person"></i>
-                        <span class="text">Account</span>
-                    </a>
-                    <div class="submenu">
-                        <a href="page-account-login.html">User login</a>
-                        <a href="page-account-register.html">User registration</a>
-                        <a href="page-error-404.html">Error 404</a>
-                    </div>
-                </li> -->
-                <!-- <li class="menu-item">
-                    <a class="menu-link" href="page-reviews.html"> <i class="icon material-icons md-comment"></i>
-                        <span class="text">Reviews</span>
-                    </a>
-                </li>
-                <li class="menu-item">
-                    <a class="menu-link" href="page-brands.html"> <i class="icon material-icons md-stars"></i>
-                        <span class="text">Brands</span> </a>
-                </li>
-                <li class="menu-item">
-                    <a class="menu-link" disabled href="#"> <i class="icon material-icons md-pie_chart"></i>
-                        <span class="text">Statistics</span>
-                    </a>
-                </li> -->
             </ul>
             <hr>
-            <ul class="menu-aside">
-                <li class="menu-item has-submenu">
-                    <a class="menu-link" href="#"> <i class="icon material-icons md-settings"></i>
-                        <span class="text">Settings</span>
-                    </a>
-                    <div class="submenu">
-                        <a href="page-settings-1.html">Setting sample 1</a>
-                        <!-- <a href="page-settings-2.html">Setting sample 2</a> -->
-                    </div>
-                </li>
-                <!-- <li class="menu-item">
-                    <a class="menu-link" href="page-blank.html"> <i class="icon material-icons md-local_offer"></i>
-                        <span class="text"> Starter page </span>
-                    </a>
-                </li> -->
-            </ul>
+            
             <br>
             <br>
         </nav>
@@ -153,10 +112,7 @@
         <header class="main-header navbar">
             <div class="col-search">
                 <form class="searchform">
-                    <div class="input-group">
-                        <input list="search_terms" type="text" class="form-control" placeholder="Search term">
-                        <button class="btn btn-light bg" type="button"> <i class="material-icons md-search"></i></button>
-                    </div>
+                    
                     <datalist id="search_terms">
                         <option value="Products">
                         <option value="New orders">
@@ -168,12 +124,6 @@
             <div class="col-nav">
                 <button class="btn btn-icon btn-mobile me-auto" data-trigger="#offcanvas_aside"> <i class="material-icons md-apps"></i> </button>
                 <ul class="nav">
-                    {% comment %} <li class="nav-item">
-                        <a class="nav-link btn-icon" href="#">
-                            <i class="material-icons md-notifications animation-shake"></i>
-                            <span class="badge rounded-pill">3</span>
-                        </a>
-                    </li> {% endcomment %}
                     <li class="nav-item">
                         <a class="nav-link btn-icon darkmode" href="#"> <i class="material-icons md-nights_stay"></i> </a>
                     </li>
@@ -183,11 +133,7 @@
                     <li class="dropdown nav-item">
                         <a class="dropdown-toggle" data-bs-toggle="dropdown" href="#" id="dropdownAccount" aria-expanded="false"> <img class="img-xs rounded-circle" src="{% static 'admin/assets/imgs/people/avatar2.jpg' %}" alt="User"></a>
                         <div class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownAccount">
-                            {% comment %} <a class="dropdown-item" href="#"><i class="material-icons md-perm_identity"></i>Edit Profile</a> {% endcomment %}
-                            <a class="dropdown-item" href="#"><i class="material-icons md-settings"></i>Account Settings</a>
-                            {% comment %} <a class="dropdown-item" href="#"><i class="material-icons md-account_balance_wallet"></i>Wallet</a> {% endcomment %}
-                            {% comment %} <a class="dropdown-item" href="#"><i class="material-icons md-receipt"></i>Billing</a> {% endcomment %}
-                            <a class="dropdown-item" href="#"><i class="material-icons md-help_outline"></i>Help center</a>
+                            
                             <div class="dropdown-divider"></div>
                             <a class="dropdown-item text-danger" href="{% url 'admin_logout' %}"><i class="material-icons md-exit_to_app"></i>Logout</a>
                         </div>
@@ -197,7 +143,7 @@
         </header>
 
         {% block content %}
-        <!-- Default content goes here -->
+        
         {% endblock %}
 
         <footer class="main-footer font-xs">
@@ -205,7 +151,7 @@
                 <div class="col-sm-6">
                     <script>
                     document.write(new Date().getFullYear())
-                    </script> ©, Evara - HTML Ecommerce Template .
+                    </script> DigiHub
                 </div>
                 <div class="col-sm-6">
                     <div class="text-sm-end">
@@ -221,11 +167,10 @@
     <script src="{% static 'admin/assets/js/vendors/perfect-scrollbar.js' %}"></script>
     <script src="{% static 'admin/assets/js/vendors/jquery.fullscreen.min.js' %}"></script>
     <script src="{% static 'admin/assets/js/vendors/chart.js' %}"></script>
-    <!-- Main Script -->
     <script src="{% static 'admin/assets/js/main.js' %}" type="text/javascript"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="{% static 'admin/assets/js/custom-chart.js'%}" type="text/javascript"></script>
 </body>
 
 
-<!-- Mirrored from wp.alithemes.com/html/evara/evara-backend/index.html by HTTrack Website Copier/3.x [XR&CO'2014], Sun, 01 Aug 2021 15:32:57 GMT -->
 </html>

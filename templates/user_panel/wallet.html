@@ -40,11 +40,11 @@
                             </tr>
                             {% endfor %}
                         </tbody>
-                    </table> <!-- table-responsive.// -->
+                    </table> 
                 </div>
-            </div> <!-- card-body end// -->
+            </div> 
         </div>
-        <!-- Pagination links -->
+        
         <div class="pagination">
             <span class="step-links">
                 {% if page_obj.has_previous %}
@@ -65,13 +65,13 @@
     </body>
     <script>
         function formatCurrency(input) {
-            // Remove existing commas and periods
+            
             let value = input.value.replace(/[,.]/g, '');
     
-            // Format the number with commas for thousands separator
+            
             value = Number(value).toLocaleString('en-IN');
     
-            // Update the input value
+            
             input.value = value;
         }
     </script>

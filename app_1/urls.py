@@ -6,7 +6,7 @@ app_name="user"
 urlpatterns = [
     path('login', views.login,name='login'),
     path('forgot_pass',views.forgot_pass,name="forgot_pass"),
-    path('accounts/google/login/callback', views.google_oauth_callback, name='google_oauth_callback'),
+    
     path('signup',views.signup,name='signup'),
     path('logout',views.logout,name='logout'),
     path('',views.index,name='index'),

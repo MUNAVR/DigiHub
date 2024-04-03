@@ -30,6 +30,7 @@ class Products(models.Model):
     battery = models.CharField(max_length=8,default='Unknown')
     processor = models.CharField(max_length=20,default='Unknown')
     offer=models.DecimalField(max_digits=5, decimal_places=2,default=0)
+    sale_count=models.CharField(max_length=15,default=0)
 
 
 

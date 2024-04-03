@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice</title>
+   
+</head>
+<body>
+    
+    <div class="invoice">
+        <h2>Invoice</h2>
+        
+        <div class="details">
+            <p><strong>Invoice Number:</strong> {{ order.invoice_number }}</p>
+            <p><strong>Order Date:</strong> {{ order.order_date }}</p>
+            <p><strong>Customer Name:</strong> {{ user.first_name }} {{ user.last_name }}</p>
+            <p><strong>Delivery Address:</strong> {{ add.address }}</p>
+            
+        </div>
+        
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Unit Price</th>
+                    <th>Quantity</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for product in products %}
+                <tr>
+                    <td>{{ product.name }}</td>
+                    <td>{{ product.price }}</td>
+                    <td>{{ product.quantity }}</td>
+                    <td>{{ product.total }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        
+        
+        <div class="total">
+            <p><strong>Subtotal:</strong> {{ order.subtotal }}</p>
+            <p><strong>Shipping Cost:</strong> {{ order.shipping_cost }}</p>
+            <p><strong>Total Amount:</strong> {{ order.total_amount }}</p>
+        </div>
+        
+        
+        <div class="footer">
+            Thank you for your business!
+        </div>
+    </div>
+</body>
+</html>

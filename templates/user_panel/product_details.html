@@ -23,7 +23,7 @@
                                 <div class="col-md-6 col-sm-12 col-xs-12">
                                     <div class="detail-gallery">
                                         <span class="zoom-icon"><i class="fi-rs-search"></i></span>
-                                        <!-- MAIN SLIDES -->
+                                        
                                         <div class="product-image-slider">
                                             <figure class="border-radius-10">
                                                 <img src="{{ variant.thumbnail_image.url}}" alt="product image">
@@ -35,14 +35,14 @@
                                                 <img src="{{ variant.thumbnail_image2.url}}" alt="product image">
                                             </figure>
                                         </div>
-                                        <!-- THUMBNAILS -->
+                                        
                                         <div class="slider-nav-thumbnails pl-15 pr-15">
                                             <div><img src="{{ variant.thumbnail_image.url}}" alt="product image"></div>
                                             <div><img src="{{ variant.thumbnail_image1.url}}" alt="product image"></div>
                                             <div><img src="{{ variant.thumbnail_image2.url}}" alt="product image"></div>
                                         </div>
                                     </div>
-                                    <!-- End Gallery -->
+                                    
                                 </div>
                                 <div class="col-md-6 col-sm-12 col-xs-12">
                                     <div class="detail-info">
@@ -76,7 +76,6 @@
                                         <div class="bt-1 border-color-1 mt-15 mb-15"></div>
                                         <div class="product_sort_info font-xs mb-30">
                                             <ul>
-                                                {% comment %} <li class="mb-10"><i class="fi-rs-crown mr-5"></i> RAM: {{ attribute_value.attribute_ram }}</li> {% endcomment %}
                                                 <li class="mb-10"><i class="fi-rs-crown mr-5" id="product-rom"></i> RAM: {{ variant.rom }}</li>
                                                 <li class="mb-10"><i class="fi-rs-refresh mr-5"></i> DISPLAY: {{ variant.product.display }}</li>
                                                 <li><i class="fi-rs-credit-card mr-5"></i> CAMERA: {{ variant.product.camera }}</li>
@@ -107,11 +106,10 @@
                                                 <button type="button" onclick="window.location.href='{% url 'add_cart' variant.id %}'" onclick="addToCart()" class="button button-add-to-cart">Add Cart</button>
 
                                                 <a aria-label="Add To Wishlist" class="action-btn hover-up" href="{% url 'add_wishlist' variant.id %}"><i class="fi-rs-heart"></i></a>
-                                                {% comment %} <a aria-label="Compare" class="action-btn hover-up" href="shop-compare.html"><i class="fi-rs-shuffle"></i></a> {% endcomment %}
                                             </div>
                                         </div>
                                     </div>
-                                    <!-- Detail Info -->
+                                   
                                 </div>
                             </div>
                             <div class="tab-style3">
@@ -322,7 +320,7 @@
             $('.variant-link').click(function(e) {
                 e.preventDefault();
                 var variantId = $(this).data('variant');
-                console.log('Variant ID:', variantId); // Log the variant ID
+                console.log('Variant ID:', variantId);
                 
                 $.ajax({
                     type: 'GET',
@@ -331,17 +329,16 @@
                         'variant_id': variantId
                     },
                     headers: {
-                        'X-Requested-With': 'XMLHttpRequest' // Set X-Requested-With header
+                        'X-Requested-With': 'XMLHttpRequest' 
                     },
                     success: function(response) {
-                        console.log('AJAX Success:', response); // Log the response
-                        // Handle successful response
-                        // You can update the product details container with the response
+                        console.log('AJAX Success:', response); 
+                        
                         $('#product-details-container').html(response.product_details_html);
                     },
                     error: function(xhr, status, error) {
-                        console.error('AJAX Error:', error); // Log the error
-                        // Handle error
+                        console.error('AJAX Error:', error); 
+                        
                     }
                 });
             });

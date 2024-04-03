@@ -4,6 +4,8 @@
 {% block title %}index{% endblock %}
 
 {% block content %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% comment %} <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> {% endcomment %}
         <section class="content-main">
             <div class="content-header">
                 <div>
@@ -19,7 +21,7 @@
                             <span class="icon icon-sm rounded-circle bg-primary-light"><i class="text-primary material-icons md-monetization_on"></i></span>
                             <div class="text">
                                 <h6 class="mb-1 card-title">Revenue</h6>
-                                <span>{{total_earnings}}</span>
+                                <span>₹{{total_earnings}}</span>
                                 
                             </div>
                         </article>
@@ -50,45 +52,149 @@
                 <div class="col-lg-3">
                     <div class="card card-body mb-4">
                         <article class="icontext">
-                            <span class="icon icon-sm rounded-circle bg-info-light"><i class="text-info material-icons md-shopping_basket"></i></span>
+                            <span class="icon icon-sm rounded-circle bg-success-light"><i class="text-success material-icons md-local_shipping"></i></span>
                             <div class="text">
-                                <h6 class="mb-1 card-title">Monthly Earning</h6> <span>{{monthly_earnings}}</span>
+                                <h6 class="mb-1 card-title">Completed Orders</h6> <span>{{total_completed}}</span>
                                 
                             </div>
                         </article>
                     </div>
                 </div>
+                
+                
             </div>
-            <div class="row">
-                <div class="col-xl-8 col-lg-12">
-                    <div class="card mb-4">
-                        <article class="card-body">
-                            <h5 class="card-title">Sale statistics</h5>
-                            <canvas id="myChart" height="120px"></canvas>
-                        </article>
+            
+            <!-- Chart container -->
+            <div>
+                <h3>Sales Comparison</h3><br>
+
+                <div style="display: inline-block; width: 450px; margin-right: 20px;">
+                    <select id="chart-type" style="width: 100px;">
+                        <option value="monthly">Monthly</option>
+                        <option value="yearly">Yearly</option>
+                    </select>
+                    <canvas id="sales-chart" width="100" height="100"></canvas>
+                </div>
+                
+                <div style="display: inline-block; width: 450px;">
+                    <h4>Sales Status</h4>
+                    <div class="chart-container">
+                        <canvas id="order-status-chart"></canvas>
                     </div>
                 </div>
-                <div class="col-xl-4 col-lg-12">
-                    <div class="card mb-4">
-                        <article class="card-body">
-                            <h5 class="card-title">Revenue Base on Area</h5>
-                            <canvas id="myChart2" height="217"></canvas>
-                        </article>
-                    </div>
-                    
-                </div>
             </div>
+            
+    
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    const ctx = document.getElementById('sales-chart').getContext('2d');
+                    let salesChart = null;
+        
+                    function fetchData(chartType) {
+                        const url = chartType === 'monthly' ? '{% url "get_monthly_sales" %}' : '{% url "get_yearly_sales" %}';
+                        fetch(url)
+                            .then(response => response.json())
+                            .then(data => {
+                                const labels = chartType === 'monthly' ? ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'] : ['202','2023','2024','2025','2026','2027']; // Adjust labels accordingly
+                                const salesData = chartType === 'monthly' ? data.monthly_sales : data.yearly_sales;
+        
+                                if (salesChart) {
+                                    salesChart.destroy();
+                                }
+        
+                                salesChart = new Chart(ctx, {
+                                    type: 'line',
+                                    data: {
+                                        labels: labels,
+                                        datasets: [{
+                                            label: 'Sales',
+                                            data: salesData,
+                                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                                            borderColor: 'rgba(75, 192, 192, 1)',
+                                            borderWidth: 1
+                                        }]
+                                    },
+                                    options: {
+                                        scales: {
+                                            yAxes: [{
+                                                ticks: {
+                                                    beginAtZero: true
+                                                }
+                                            }]
+                                        }
+                                    }
+                                });
+                            })
+                            .catch(error => console.error('Error fetching data:', error));
+                    }
+        
+                    document.getElementById('chart-type').addEventListener('change', function(event) {
+                        const chartType = event.target.value;
+                        fetchData(chartType);
+                    });
+        
+                    fetchData('monthly'); // Fetch monthly sales data by default
+                });
+            </script>
+
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    const total_completed = {{ total_completed }};
+                    const total_cancelled = {{ total_cancelled }};
+                    const total_pending = {{ total_Pending }};
+                    const total_shipped = {{ total_Shipped }};
+        
+                    const orderStatusCtx = document.getElementById('order-status-chart').getContext('2d');
+                    const orderStatusChart = new Chart(orderStatusCtx, {
+                        type: 'pie',
+                        data: {
+                            labels: ['Completed', 'Cancelled', 'Pending', 'Shipped'],
+                            datasets: [{
+                                label: 'Order Status',
+                                data: [total_completed, total_cancelled, total_pending, total_shipped],
+                                backgroundColor: [
+                                    'rgba(255, 99, 132, 0.6)',
+                                    'rgba(54, 162, 235, 0.6)',
+                                    'rgba(255, 206, 86, 0.6)',
+                                    'rgba(75, 192, 192, 0.6)'
+                                ],
+                                borderColor: [
+                                    'rgba(255, 99, 132, 1)',
+                                    'rgba(54, 162, 235, 1)',
+                                    'rgba(255, 206, 86, 1)',
+                                    'rgba(75, 192, 192, 1)'
+                                ],
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            tooltips: {
+                                callbacks: {
+                                    label: function(tooltipItem, data) {
+                                        const label = data.labels[tooltipItem.index] || '';
+                                        const value = data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index];
+                                        return label + ': ' + value;
+                                    }
+                                }
+                            }
+                        }
+                    });
+                });
+            </script>
+
+            <br><br><br>
             <div>
                 <center>
                 <h4>Sales Report</h4></center>
                 <p>PDF Report</p>
                 <a href="{% url 'sales-report' %}?report_type=daily&format=pdf" class="btn btn-primary"><i class="text-muted material-icons md-post_add"></i>Daily PDF report</a>&nbsp
                 <a href="{% url 'sales-report' %}?report_type=weekly&format=pdf" class="btn btn-primary"><i class="text-muted material-icons md-post_add"></i>Weekly PDF report</a>&nbsp
-                <a href="{% url 'sales-report' %}?report_type=monthly&format=pdf" class="btn btn-primary"><i class="text-muted material-icons md-post_add"></i>Yearly PDF report</a><br><br>
+                <a href="{% url 'sales-report' %}?report_type=yearly&format=pdf" class="btn btn-primary"><i class="text-muted material-icons md-post_add"></i>Yearly PDF report</a><br><br>
                 <p>Excel Report</p>
                 <a href="{% url 'sales-report' %}?report_type=weekly&format=excel" class="btn btn-primary"><i class="text-muted material-icons md-post_add"></i>Weekly Excel report</a>&nbsp
                 <a href="{% url 'sales-report' %}?report_type=daily&format=excel" class="btn btn-primary"><i class="text-muted material-icons md-post_add"></i>Daily Excel report</a>&nbsp
-                <a href="{% url 'sales-report' %}?report_type=monthly&format=excel" class="btn btn-primary"><i class="text-muted material-icons md-post_add"></i>Yearly Excel report</a><br><br>
+                <a href="{% url 'sales-report' %}?report_type=yearly&format=excel" class="btn btn-primary"><i class="text-muted material-icons md-post_add"></i>Yearly Excel report</a><br><br>
                 <p>Custom sales Report</p>
                 <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#customReportModal">
                     Custom report

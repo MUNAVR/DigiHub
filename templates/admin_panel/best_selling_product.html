@@ -1,0 +1,71 @@
+{% extends 'admin_panel/base.html' %}
+{% load static %}
+
+{% block title %}Best Selling Products{% endblock %}
+
+{% block content %}
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f8f9fa; /* Light gray background */
+    }
+    .container {
+        width: 80%;
+        margin: 20px auto;
+    }
+    h1 {
+        color: #333; /* Dark gray text */
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1); /* Shadow effect */
+        background-color: #fff; /* White background */
+    }
+    th, td {
+        padding: 12px 15px;
+        text-align: left;
+        border-bottom: 1px solid #ddd; /* Light gray border */
+    }
+    th {
+        background-color: #f2f2f2; /* Light gray background for header */
+        color: #333; /* Dark gray text for header */
+    }
+    tbody tr:hover {
+        background-color: #f5f5f5; /* Light gray background on hover */
+    }
+    b {
+        color: #007bff; /* Blue text */
+    }
+</style>
+
+<div class="container">
+    <h1>Best Selling Products</h1>
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Product Name</th>
+                <th scope="col">Total Quantity Sold</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for product in best_selling_products %}
+            <tr>
+                <th scope="row">{{ forloop.counter }}</th>
+                <td><b>{{ product.product_name }}</b></td>
+                <td>{{ product.total_quantity }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+    <br><br><br><br><br><br><br><br><br><br><br><br><br>
+{% endblock %}

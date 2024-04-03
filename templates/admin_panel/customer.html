@@ -33,7 +33,7 @@
                             </select>
                         </div>
                     </div>
-                </header> <!-- card-header end// -->
+                </header> 
                 <div class="card-body">
                     <div class="table-responsive">
                         <table class="table table-hover">
@@ -43,7 +43,7 @@
                                     <th>Email</th>
                                     <th>Action</th>
                                     {% comment %} <th>Edit</th> {% endcomment %}
-                                     {% comment %} <th class="text-end">Delete</th> {% endcomment %}
+                                    {% comment %} <th class="text-end">Delete</th> {% endcomment %}
                                 </tr>
                             </thead>
                             <tbody>
@@ -71,7 +71,7 @@
                                             </button>
                                     </td>
                                     <script>
-                                        // Function to retrieve CSRF token from the cookie
+                                        
                                         function getCookie(name) {
                                             var cookieValue = null;
                                             if (document.cookie && document.cookie !== '') {
@@ -95,7 +95,7 @@
                                             blockBtn.classList.toggle('btn-outline-primary');
                                             blockBtn.classList.toggle('btn-primary');
                                     
-                                            // Get CSRF token
+                                           
                                             var csrftoken = getCookie('csrftoken');
                                     
                                             var url = isBlocked ? '/block/' : '/unblock/';
@@ -125,10 +125,10 @@
                                 </tr>
                                 {% endfor %}
                             </tbody>
-                        </table> <!-- table-responsive.// -->
+                        </table> 
                     </div>
-                </div> <!-- card-body end// -->
-            </div> <!-- card end// -->
+                </div> 
+            </div> 
             <div class="pagination-area mt-15 mb-50">
                 <nav aria-label="Page navigation example">
                     <ul class="pagination justify-content-start">
@@ -141,5 +141,5 @@
                     </ul>
                 </nav>
             </div>
-        </section> <!-- content-main end// -->
+        </section> 
         {% endblock %}

@@ -35,7 +35,7 @@
             {% endif %}
             <div class="card mb-4">
                 <header class="card-header">
-                </header> <!-- card-header end// -->
+                </header> 
                 <div class="card-body">
                     <div class="table-responsive">
                         <table class="table table-hover">
@@ -66,25 +66,32 @@
                                     <td>{{order.order_status}}</td>
                                     <td>
                                         <center>
-                                            <a href="{% url 'order_details' order.id %}" class="btn btn-md rounded font-sm">Details</a>
-                                            {% if order.order_status != 'Returned' %}
-                                                {% if order.order_status == 'Completed' %}
-                                                    <a href="{% url 'return_order' order.id %}" class="btn btn-md rounded font-sm">Return</a>
-                                                {% else %}
-                                                    <a href="{% url 'cancel_order' order.id %}" id="cancel-button" class="btn btn-md rounded font-sm">Cancel</a>
+                                            {% if order.payment_status == 'Failed' %}
+                                                <a href="{% url 'coutinue_payment' order.id %}" class="btn btn-md rounded font-sm">Continue Payment</a>
+                                            {% else %}
+                                                <a href="{% url 'order_details' order.id %}" class="btn btn-md rounded font-sm">Details</a>
+                                                {% if order.order_status != 'Returned' %}
+                                                    {% if order.order_status == 'Completed' %}
+                                                        <a href="{% url 'return_order' order.id %}" class="btn btn-md rounded font-sm">Return</a>
+                                                    {% else %}
+                                                        <a href="{% url 'cancel_order' order.id %}" id="cancel-button" class="btn btn-md rounded font-sm">Cancel</a>
+                                                    {% endif %}
                                                 {% endif %}
                                             {% endif %}
                                         </center>
                                     </td>
                                     
                                     
+                                    
+                                    
+                                    
                                 </tr>
                                 {% endfor %}
                             </tbody>
                         </table>
-                    </div> <!-- table-responsive //end -->
-                </div> <!-- card-body end// -->
-            </div> <!-- card end// -->
+                    </div> 
+                </div> 
+            </div> 
             <div class="pagination-area mt-15 mb-50">
                 <nav aria-label="Page navigation example">
                     <ul class="pagination justify-content-start">
@@ -112,7 +119,6 @@
                     </ul>
                 </nav>
             </div>
-            <!-- content-main end// -->
         {% endblock %}
     
     

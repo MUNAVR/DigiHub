@@ -11,10 +11,7 @@
                     <div class="col-9">
                         <div class="content-header">
                             <h2 class="content-title">Edit Variant</h2>
-                            <!-- <div>
-                                <button class="btn btn-light rounded font-sm mr-5 text-body hover-up">Save to draft</button>
-                                <button class="btn btn-md rounded font-sm hover-up">Publich</button>
-                            </div> -->
+                            
                         </div>
                     </div>
                     {% if error_message %}
@@ -63,23 +60,17 @@
                                     <div class="card-body">
                                         <div class="input-upload">
                                             <img src="{{ obj.thumbnail_image.url }}" alt="">
-                                            <!-- Display current image URL -->
-<!--                                            <input class="form-control mb-2" value="{{ obj.thumbnail_image.url }}" type="text" readonly>-->
-                                            <!-- File input for uploading a new image -->
+                                            
                                             <input class="form-control" name="image" type="file">
                                         </div>
                                         <div class="input-upload"><br>
                                             <img src="{{ obj.thumbnail_image1.url }}" alt="">
-                                            <!-- Display current image URL -->
-<!--                                            <input class="form-control mb-2" value="{{ obj.thumbnail_image.url }}" type="text" readonly>-->
-                                            <!-- File input for uploading a new image -->
+                                            
                                             <input class="form-control" name="image1" type="file">
                                         </div>
                                         <div class="input-upload"><br>
                                             <img src="{{ obj.thumbnail_image2.url }}" alt="">
-                                            <!-- Display current image URL -->
-<!--                                            <input class="form-control mb-2" value="{{ obj.thumbnail_image.url }}" type="text" readonly>-->
-                                            <!-- File input for uploading a new image -->
+                                            
                                             <input class="form-control" name="image2" type="file">
                                         </div>
                                     </div>
@@ -88,9 +79,9 @@
                                         <button class="btn btn-primary">Change Product</button>
                                     </div>
                             </div>
-                        </div> <!-- card end// -->
+                        </div> 
                     </div>
                 </form>
             </div>
-        </section> <!-- content-main end// -->
+        </section> 
         {% endblock %}

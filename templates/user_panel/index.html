@@ -78,7 +78,6 @@
                                             {% endif %}
                                         {% endfor %}
                                         <li class="mb-10"><i class="fi-rs-crown mr-5"></i> {{ attribute_value.attribute_ram }}</li>
-                                        {% comment %} <li class="mb-10"><i class="fi-rs-crown mr-5"></i>Color: {{ attribute_value.attribute_color }}</li> {% endcomment %}
                                         <li class="mb-10"><i class="fi-rs-crown mr-5"></i>Camera: {{ variant.product.camera }}</li>
                                         <li class="mb-10"><i class="fi-rs-crown mr-5"></i>Display: {{ variant.product.display }}</li>
                                         <li class="mb-10"><i class="fi-rs-crown mr-5"></i>Battery: {{variant.product.battery}}</li>
@@ -133,7 +132,6 @@
                             <!--pagination-->
                         </div>
                         <div class="col-lg-3 primary-sidebar sticky-sidebar">
-                            <!-- Product sidebar Widget -->
                             <div class="sidebar-widget product-sidebar  mb-30 p-30 bg-grey border-radius-10">
                                 <div class="widget-header position-relative mb-20 pb-10">
                                     <h5 class="widget-title mb-10">New products</h5>
@@ -157,20 +155,6 @@
                                 </div>
                                 {% endfor %}
                             </div>
-                            {% comment %} <div class="col-lg-3 primary-sidebar sticky-sidebar">
-                                <div class="widget-category mb-30">
-                                    <h5 class="section-title style-1 mb-30 wow fadeIn animated">Brands</h5>
-                                    <ul class="categories">
-                                        {% for brand in brands %}
-                                            {% if brand.offer %}
-                                                <li><a href="#">{{ brand.name }}, {{ brand.offer }}% off</a></li>
-                                            {% else %}
-                                                <li><a href="#">{{ brand.name }}</a></li>
-                                            {% endif %}
-                                        {% endfor %}
-                                    </ul>
-                                </div>
-                            </div> {% endcomment %}
                         </div>
                     </div>
                 </div> 
@@ -191,7 +175,7 @@
                             sort_by: sortBy
                         },
                         success: function(response) {
-                            $('#product-list').html(response.html); // Update only the product list section
+                            $('#product-list').html(response.html);
                         },
                         error: function(xhr, textStatus, errorThrown) {
                             console.error('Error:', errorThrown);
@@ -204,25 +188,25 @@
         </script>
 
 <script>
-            // Get the modal element
+            
         var modal = document.getElementById("messageModal");
 
-        // Get the <span> element that closes the modal
+        
         var span = document.getElementsByClassName("close")[0];
 
-        // Function to open the modal with message content
+        
         function showMessage(message) {
         var messageContent = document.getElementById("messageContent");
         messageContent.innerHTML = message;
         modal.style.display = "block";
         }
 
-        // When the user clicks on <span> (x), close the modal
+        
         span.onclick = function() {
         modal.style.display = "none";
         }
 
-        // When the user clicks anywhere outside of the modal, close it
+        
         window.onclick = function(event) {
         if (event.target == modal) {
             modal.style.display = "none";
@@ -232,7 +216,7 @@
 </script>
 
 <script>
-    // Check if the user is logged in and prevent navigating back to the login page
+    
     window.onload = function () {
         if (window.history.replaceState) {
             if (window.location.href.indexOf('login') !== -1) {
@@ -245,20 +229,20 @@
 <script>
     $(document).ready(function() {
         $('#pagination').on('click', 'a.page-link', function(event) {
-            event.preventDefault(); // Prevent default link behavior
+            event.preventDefault(); 
 
-            var pageUrl = $(this).attr('href'); // Get the URL of the clicked page
-            loadProductList(pageUrl); // Load product list for the clicked page
+            var pageUrl = $(this).attr('href'); 
+            loadProductList(pageUrl); 
         });
     });
 
-    // Function to load product list using AJAX
+    
     function loadProductList(pageUrl) {
         $.ajax({
             type: 'GET',
             url: pageUrl,
             success: function(response) {
-                $('#product-list').html(response); // Update only the product list section
+                $('#product-list').html(response);
             },
             error: function(xhr, textStatus, errorThrown) {
                 console.error('Error:', errorThrown);

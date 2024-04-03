@@ -27,8 +27,18 @@
         top: 10px;
         right: 10px;
         cursor: pointer;
+    }
+    .cod-not-allowed-message {
+        background-color: #f8d7da;
+        color: #721c24;
+        padding: 10px;
+        border: 1px solid #f5c6cb;
+        border-radius: 5px;
+        margin-bottom: 10px;
     }    
 </style>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
     <main class="main">
         <div class="page-header breadcrumb-wrap">
             <div class="container">
@@ -145,9 +155,18 @@
                                     <tbody>
                                         <tr>
                                             {% for cart_item in cart %}
-                                                <td class="image product-thumbnail"><img src="{{ cart_item.product_variant.thumbnail_image.url }}" alt="#"></td>
+                                                <td class="image product-thumbnail">
+                                                    {% if cart_item.product_variant.thumbnail_image %}
+                                                        <img src="{{ cart_item.product_variant.thumbnail_image.url }}" alt="Product Image">
+                                                    {% else %}
+                                                        {% for image in product_images %}
+                                                            <img src="{{ image }}" alt="Product Image">
+                                                        {% endfor %}
+                                                    {% endif %}
+                                                </td>
+                                                {% comment %} <td class="image product-thumbnail"><img src="{{ cart_item.product_variant.thumbnail_image.url }}"alt="#"></td> {% endcomment %}
                                                 <td>
-                                                    <h5><a href="shop-product-full.html">{{ cart_item.product_variant.product.product_name }} </a></h5>
+                                                    <h5><a href="shop-product-full.html">{{ cart_item.product_variant.product.product_name }}{{ cart_item.product_name }} </a></h5>
                                                     <span class="product-qty">x {{ cart_item.quantity }}</span>
                                                 </td>
                                             </tr>
@@ -189,9 +208,6 @@
                                                 <div class="form-group">
                                                     <input type="text" id="couponInput" placeholder="Click here to enter coupon code..." required>
                                                 </div>
-                                                {% comment %} <div class="form-group">
-                                                    <button type="button" class="btn btn-md">Apply Coupon</button>
-                                                </div> {% endcomment %}
                                             </form>
                                         </div>
                                     </div>
@@ -227,12 +243,12 @@
                                     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> <!-- Ensure jQuery is included -->
 
                                     <script>
-                                        // Function to close the coupon modal
+                                        
                                         function closeCouponModal() {
                                             $('#couponModal').modal('hide');
                                         }
                                     
-                                        // When the input field is clicked, show the coupon modal
+                                        
                                         $(document).ready(function() {
                                             $('#couponInput').click(function() {
                                                 $('#couponModal').modal('show');
@@ -241,17 +257,17 @@
                                     
                                         $(document).ready(function() {
                                             $('#applyCouponBtn').click(function(event) {
-                                                event.preventDefault(); // Prevent default form submission
+                                                event.preventDefault();
                                     
                                                 var selectedCouponId = $('#selectedCoupon').val();
-                                                var totalAmount = parseFloat('{{ total }}'); // Pass the total amount from Django template
+                                                var totalAmount = parseFloat('{{ total }}'); 
                                     
                                                 if (selectedCouponId) {
                                                     $.ajax({
                                                         url: '{% url "apply_coupon" %}',
                                                         method: 'POST',
                                                         headers: {
-                                                            'X-Requested-With': 'XMLHttpRequest' // Set AJAX header
+                                                            'X-Requested-With': 'XMLHttpRequest' 
                                                         },
                                                         data: {
                                                             csrfmiddlewaretoken: '{{ csrf_token }}',
@@ -261,11 +277,11 @@
                                                         success: function(response) {
                                                             var discountedTotal = response.discounted_total;
                                                             var discountAmount = totalAmount - parseFloat(discountedTotal);
-                                                            $('#totalAmount').text('₹ ' + discountedTotal); // Update the total amount
-                                                            $('#discountAmount').text(discountAmount.toFixed(2)); // Display the discount amount
-                                                            $('#discountRow').show(); // Show the discount row
-                                                            $('#applyCouponBtn').hide(); // Hide the apply coupon button
-                                                            closeCouponModal(); // Close the coupon modal
+                                                            $('#totalAmount').text('₹ ' + discountedTotal); 
+                                                            $('#discountAmount').text(discountAmount.toFixed(2)); 
+                                                            $('#discountRow').show(); 
+                                                            $('#applyCouponBtn').hide(); 
+                                                            closeCouponModal(); 
                                                         },
                                                         error: function(xhr, status, error) {
                                                             console.error(error);
@@ -291,44 +307,88 @@
                                     </div>
                                     <div class="custome-radio">
                                         <input class="form-check-input" required="" type="radio" name="payment_option" id="razorpay" value="razorpay">
-                                        <label class="form-check-label" for="razorpay">Razorpay</label>
+                                        <label class="form-check-label" for="razorpay">Online Payment</label>
                                     </div>
                                     <div class="custome-radio">
                                         <input class="form-check-input" required="" type="radio" name="payment_option" id="wallet" value="wallet">
-                                        <label class="form-check-label" for="wallet">Wallet</label>
+                                        <label class="form-check-label" for="wallet">Wallet Payment</label>
                                     </div>
                                 </div>
                                 
                             </div>
-                            <button type="button" class="btn btn-fill-out btn-block mt-30" id="place_order_button">Place Order</button>
+                            <button type="button" class="btn btn-fill-out btn-block mt-30" id="place_order_button">Place Order</button><br><br>
+                            {% if payment_details.payment_status != 'failed' %}
+                            <form id="razorpay-form" action="{% url 'handle_razorpay_success' %}" method="POST">
+                                {% csrf_token %}
+                                <script src="https://checkout.razorpay.com/v1/checkout.js"
+                                        data-key="{{ payment_details.key }}"
+                                        data-amount="{{ payment_details.amount }}"
+                                        data-currency="{{ payment_details.currency }}"
+                                        data-order_id="{{ payment_details.id }}"
+                                        data-buttontext="Pay with Razorpay"
+                                        data-name="DigiHub"
+                                        data-description="Purchase Description"
+                                        data-image="https://example.com/your_logo.jpg"
+                                        data-prefill.name="Munavar"
+                                        data-prefill.email="{{ payment_details.email }}"
+                                        data-theme.color="#F37254"
+                                        data-handler="handleRazorpayClose">
+                                </script>
+                                <input type="hidden" name="email" value="{{ payment_details.email }}">
+                                <input type="hidden" name="order_id" value="{{ order_id }}">
+                            </form>
+                            {% else %}
+                                <p>Payment has failed. Please try again.</p>
+                                <script>
+                                    function redirectToCart() {
+                                        window.location.href = "{% url 'shop_cart' %}";
+                                    }
+                                    redirectToCart();
+                                </script>
+                            {% endif %}
+                        
+                            
+                            <!-- Your HTML template with Razorpay payment button -->
+                            
                         </div>
                     </div>
                 </div>
             </div>  
         </section>
+        
     </main>
     <script>
         document.getElementById('place_order_button').addEventListener('click', function() {
             var selectedPaymentOption = document.querySelector('input[name="payment_option"]:checked').value;
+            var totalAmount = parseFloat('{{ total }}'); 
+            
+            console.log('Total Amount:', totalAmount); // Debugging statement
+            
             if (selectedPaymentOption === 'razorpay') {
-                // Redirect to Razorpay payment page
                 window.location.href = "{% url 'razorpay_payment' %}";
             } else if (selectedPaymentOption === 'cash_on_delivery') {
-                // Proceed with other payment methods (in this case, Cash on Delivery)
-                // Submit the form to the place_order URL
-                document.querySelector('form').action = "{% url 'place_order' %}";
-                document.querySelector('form').submit();
+                console.log('Checking if totalAmount >= 9000:', totalAmount >= 9000); // Debugging statement
+                
+                if (totalAmount >= 9000) {
+                    console.log('Total amount is above 9000. Cannot proceed with cash on delivery.'); // Debugging statement
+                    var messageElement = document.createElement('div');
+                    messageElement.classList.add('cod-not-allowed-message');
+                    messageElement.innerText = 'Cash on Delivery is not available for orders under ₹9000.';
+                    document.querySelector('.payment_method').insertAdjacentElement('beforebegin', messageElement);
+                } else {
+                    console.log('Total amount is below 9000. Proceeding with cash on delivery.'); // Debugging statement
+                    document.querySelector('form').action = "{% url 'place_order' %}";
+                    document.querySelector('form').submit();
+                }
             } else {
-                // For other payment options (e.g., wallet payment)
-                // Submit the form to the appropriate URL
                 document.querySelector('form').action = "{% url 'wallat_payment' %}";
                 document.querySelector('form').submit();
             }
         });
-        function closePopup() {
-            document.getElementById("popup").style.display = "none";
-        }
-    </script> 
+    </script>
+    
+    
+    
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 
     <script>
@@ -338,15 +398,15 @@
                 if (selectedAddressId) {
                     var csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
                     var addressId = selectedAddressId.value;
-                    // Send selected address ID to the server using AJAX
+                    
                     fetch('/save_order_address/', {
                         method: 'POST',
                         headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded', // Change content type
+                            'Content-Type': 'application/x-www-form-urlencoded', 
                             'X-Requested-With': 'XMLHttpRequest',
                             'X-CSRFToken': csrfToken
                         },
-                        body: 'selected_address_id=' + encodeURIComponent(addressId) // Encode the data properly
+                        body: 'selected_address_id=' + encodeURIComponent(addressId) 
                     })
                     .then(response => {
                         if (response.ok) {
@@ -355,11 +415,11 @@
                         throw new Error('Network response was not ok.');
                     })
                     .then(data => {
-                        // Handle success response if needed
+                        
                         console.log(data);
                     })
                     .catch(error => {
-                        // Handle error response if needed
+                        
                         console.error('There was an error!', error);
                     });
                 }

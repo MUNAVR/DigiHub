@@ -28,15 +28,15 @@
             <div class="row align-items-center">
                 <div class="col-lg-6 col-md-6 mb-lg-0 mb-15">
                     <span>
-                        <i class="material-icons md-calendar_today"></i> <b>Wed, Aug 13, 2020, 4:34PM</b>
+                        {% comment %} <i class="material-icons md-calendar_today"></i> <b>Wed, Aug 13, 2020, 4:34PM</b> {% endcomment %}
                     </span> <br>
                     <small class="text-muted">Order ID: {{ order.id }}</small>
                 </div>
             </div>
-        </header> <!-- card-header end// -->
+        </header> 
         <div class="card-body">
             <div class="row mb-50 mt-20 order-info-wrap">
-                <!-- Customer Info -->
+                
                 <div class="col-md-4">
                     <article class="icontext align-items-start">
                         <span class="icon icon-sm rounded-circle bg-primary-light">
@@ -49,8 +49,8 @@
                             </p>
                         </div>
                     </article>
-                </div> <!-- col// -->
-                <!-- Order Info -->
+                </div> 
+               
                 <div class="col-md-4">
                     <article class="icontext align-items-start">
                         <span class="icon icon-sm rounded-circle bg-primary-light">
@@ -63,8 +63,8 @@
                             </p>
                         </div>
                     </article>
-                </div> <!-- col// -->
-                <!-- Delivery Address -->
+                </div> 
+                
                 <div class="col-md-4">
                     <article class="icontext align-items-start">
                         <span class="icon icon-sm rounded-circle bg-primary-light">
@@ -77,9 +77,9 @@
                             </p>
                         </div>
                     </article>
-                </div> <!-- col// -->
-            </div> <!-- row // -->
-            <!-- Order Products -->
+                </div> 
+            </div>
+            
             <div class="row">
                 <div class="col-lg-7">
                     <div class="table-responsive">
@@ -103,10 +103,10 @@
                                     <td>X {{ product.quantity }}</td>
                                 </tr>
                                 {% endfor %}
-                                <!-- Total and Status -->
+                                
                                 <tr>
                                     <td colspan="4">
-                                        <div class="pricing-status">
+                                        <div class="pricing-status">    
                                             <div class="pricing">
                                                 <div class="item">
                                                     <span class="title">Subtotal:</span>
@@ -136,11 +136,18 @@
                                 </tr>
                             </tbody>
                         </table>
-                    </div> <!-- table-responsive// -->
-                </div> <!-- col// -->
+                    </div> 
+                </div> 
                 <div class="col-lg-1"></div>
             </div>
-        </div> <!-- card-body end// -->
-    </div> <!-- card end// -->
-</section> <!-- content-main end// -->
+        </div> 
+        {% if order.order_status == "Completed" %}
+            <div class="row mt-4">
+                <div class="col-lg-12 text-center">
+                    <a href="{% url 'order_invoice' order.id %}" class="btn btn-primary">Order Invoice</a>
+                </div>
+            </div>
+            {% endif %}
+    </div> 
+</section> 
 {% endblock %}

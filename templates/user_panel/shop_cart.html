@@ -53,7 +53,6 @@
                                     <tr class="main-heading">
                                         <th scope="col">Image</th>
                                         <th scope="col">Name</th>
-                                        {% comment %} <th scopre="col">Available<br>Stock</th> {% endcomment %}
                                         <th scope="col">Price</th>
                                         <th scope="col">Quantity</th>
                                         <th scope="col">Subtotal</th>
@@ -107,7 +106,7 @@
                             <tbody>
                                 <tr>
                                     <td class="cart_total_label">Cart Subtotal</td>
-                                    <td class="cart_total_amount"><span id="total-subtotal" class="font-lg fw-900 text-brand">$0.00</span></td>
+                                    <td class="cart_total_amount"><span id="total-subtotal" class="font-lg fw-900 text-brand"></span></td>
                                 </tr>
                             </tbody>
                         </table>
@@ -117,18 +116,17 @@
             </div>
         </section>
     </main>
-    <!-- Include Bootstrap CSS -->
-    <!-- Include Bootstrap JS and jQuery -->
+    
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    <!-- Bootstrap Modal -->
+   
    
 
     <script>
         $(document).ready(function () {
 
             $(".close-btn").click(function () {
-                $(".error-message").hide(); // Hide the error message when close button is clicked
+                $(".error-message").hide(); 
             });
 
             $(".qty-up, .qty-down").on("click", function (e) {
@@ -136,7 +134,7 @@
                 var $button = $(this);
                 var oldValue = $button.siblings(".qty-val").text();
                 var newValue;
-                var maxQuantity = 5; // Maximum quantity allowed
+                var maxQuantity = 5; 
                 var cartItemId = $button.data("cartitemid");
                 var price = parseFloat($button.closest("tr").find(".price span").text());
                 var stockQuantity = parseInt($button.closest("tr").find(".stock span").text());
@@ -145,7 +143,7 @@
                     if (oldValue < maxQuantity) {
                         newValue = parseInt(oldValue) + 1;
                     } else {
-                        // Show the modal
+                        
                         $(".error-message").text("Requested quantity exceeds available stock").show();
                         return;
                     }
@@ -158,7 +156,7 @@
                 }
     
                 if (newValue > stockQuantity) {
-                    // Display message when available stock is reached
+                    
                     $(".error-message").text("Available stock limit reached.").show();
                     return;
                 }
@@ -228,7 +226,7 @@
                 $("#total-subtotal").text(total.toFixed(2));
             }
     
-            // Hide error message initially
+            
             $(".error-message").hide();
         });
 

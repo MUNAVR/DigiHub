@@ -1,0 +1,49 @@
+{% extends 'admin_panel/base.html' %}
+{% load static %}
+
+{% block title %}Best Selling Products{% endblock %}
+
+{% block content %}
+<style>
+    body {
+        font-family: Arial, sans-serif;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    th, td {
+        padding: 8px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+    th {
+        background-color: #f2f2f2;
+    }
+    tr:hover {
+        background-color: #f5f5f5;
+    }
+</style>
+<center>
+    <h1>Top Selling Brands</h1></center>
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Brand Name</th>
+                <th>Total Quantity Sold</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for brand in top_selling_brands %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ brand.0 }}</td>
+                <td>{{ brand.1 }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <br><br><br><br><br><br><br><br><br><br><br><br><br>
+{% endblock %}

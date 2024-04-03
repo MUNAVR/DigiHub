@@ -3,7 +3,6 @@
 <html class="no-js" lang="en">
 
 
-<!-- Mirrored from wp.alithemes.com/html/evara/evara-frontend/index.html by HTTrack Website Copier/3.x [XR&CO'2014], Sun, 01 Aug 2021 15:20:36 GMT -->
 <head>
     <meta charset="utf-8">
     <title>DIGI HUB</title>
@@ -14,25 +13,25 @@
     <meta property="og:type" content="">
     <meta property="og:url" content="">
     <meta property="og:image" content="">
-    <!-- Favicon -->
-    <link rel="shortcut icon" type="image/x-icon" href="{% static 'imgs/theme/favicon.svg' %}">
-    <!-- Template CSS -->
+    
+    {% comment %} <link rel="shortcut icon" type="image/x-icon" href="{% static 'imgs/theme/favicon.svg' %}"> {% endcomment %}
+   
     <link rel="stylesheet" href="{% static 'css/main.css' %}">
     <title>{% block title %}My Site{% endblock %}</title>
     <style>
         
             /* CSS for the message box */
                 .modal {
-                    display: none; /* Hidden by default */
-                    position: fixed; /* Stay in place */
-                    z-index: 9999; /* Sit on top */
+                    display: none; 
+                    position: fixed; 
+                    z-index: 9999; 
                     left: 0;
                     top: 0;
                     width: 100%;
                     height: 100%;
-                    overflow: auto; /* Enable scroll if needed */
-                    background-color: rgb(0,0,0); /* Fallback color */
-                    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+                    overflow: auto; 
+                    background-color: rgb(0,0,0); 
+                    background-color: rgba(0,0,0,0.4); 
                 }
                 
                 /* Modal Content */
@@ -68,24 +67,24 @@
     
                 /* Modal Styles */
         .modal {
-            display: none; /* Hidden by default */
-            position: fixed; /* Stay in place */
-            z-index: 9999; /* Sit on top */
+            display: none; 
+            position: fixed; 
+            z-index: 9999; 
             left: 0;
             top: 0;
-            width: 100%; /* Full width */
-            height: 100%; /* Full height */
-            overflow: auto; /* Enable scroll if needed */
-            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+            width: 100%; 
+            height: 100%; 
+            overflow: auto; 
+            background-color: rgba(0,0,0,0.4);
         }
         
         /* Modal Content */
         .modal-content {
             background-color: #fefefe;
-            margin: 15% auto; /* 15% from the top and centered */
+            margin: 15% auto; 
             padding: 20px;
             border: 1px solid #888;
-            width: 80%; /* Could be more or less, depending on screen size */
+            width: 80%; 
         }
         
         /* Close Button */
@@ -133,26 +132,26 @@
             }
         /* Style for the search button */
             .search-button {
-                background-color: #007bff; /* Change to your preferred color */
-                color: #fff; /* Text color */
-                border: none; /* Remove border */
-                padding: 10px 20px; /* Adjust padding as needed */
+                background-color: #007bff; 
+                color: #fff; 
+                border: none; 
+                padding: 10px 20px; 
                 cursor: pointer;
-                transition: background-color 0.3s ease; /* Add a smooth transition effect */
+                transition: background-color 0.3s ease; 
             }
 
             .search-button:hover {
-                background-color: #0056b3; /* Change to a darker shade on hover */
+                background-color: #0056b3; 
             }
 
             /* Adjustments for the search input field */
             .search-style-2 input[type="text"] {
-                /* Add any specific styling for the input field */
+                
             }
 
             input[type="radio"] {
-                width: 15px; /* Adjust width as needed */
-                height: 15px; /* Adjust height as needed */
+                width: 15px; 
+                height: 15px;
             }
     </style>
     
@@ -177,10 +176,10 @@
                         <div class="header-info header-info-right">
                             <ul>
                                 {% if request.session.email %}
-                                    <!-- If user is logged in, show logout button -->
+                                    
                                     <li><i class="fi-rs-user"></i><a href="{% url 'user:logout' %}">Logout</a></li>
                                 {% else %}
-                                    <!-- If user is not logged in, show login button -->
+                                    
                                     <li><i class="fi-rs-user"></i><a href="{% url 'user:login' %}">Log In</a></li>
                                 {% endif %}
                             </ul>
@@ -192,9 +191,7 @@
         <div class="header-middle header-middle-ptb-1 d-none d-lg-block">
             <div class="container">
                 <div class="header-wrap">
-                    {% comment %} <div class="logo logo-width-1">
-                        <a href="user:index"><img src="#" alt="logo"></a>
-                    </div> {% endcomment %}
+                    
                     <div class="header-right">
                         <div class="search-style-2">
                             <form action="search_mobiles" method="post">
@@ -238,21 +235,19 @@
                             </div>
                             
                             <!-- base.html -->
-
-                                <!-- Add jQuery script tag if you haven't included it already -->
                                     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 
                                     <script>
                                     $(document).ready(function() {
-                                        // Function to fetch counts and update HTML
+                                        
                                         function updateCounts() {
                                             $.ajax({
-                                                url: "{% url 'get_counts' %}",  // Endpoint URL
+                                                url: "{% url 'get_counts' %}",  
                                                 type: 'GET',
                                                 success: function(data) {
-                                                    // Update wishlist count
+                                                    
                                                     $('#wishlist-count').text(data.wishlist_count);
-                                                    // Update cart count
+                                                   
                                                     $('#cart-count').text(data.cart_count);
                                                 },
                                                 error: function(xhr, status, error) {
@@ -260,11 +255,7 @@
                                                 }
                                             });
                                         }
-
-                                        // Initial update on page load
                                         updateCounts();
-
-                                        // Periodically update counts every 60 seconds (adjust as needed)
                                         setInterval(updateCounts, 60000);
                                     });
                                     </script>
@@ -292,32 +283,13 @@
     </header>
 
     {% block content %}
-        <!-- Default content goes here -->
+        
     {% endblock %}
 
     <footer class="main">
         <section class="newsletter p-30 text-white wow fadeIn animated">
             <div class="container">
                 <div class="row align-items-center">
-                    <div class="col-lg-7 mb-md-3 mb-lg-0">
-                        <div class="row align-items-center">
-                            <div class="col flex-horizontal-center">
-                                <img class="icon-email" src="{% static 'imgs/theme/icons/icon-email.svg' %}" alt="">
-                                <h4 class="font-size-20 mb-0 ml-3">Sign up to Newsletter</h4>
-                            </div>
-                            <div class="col my-4 my-md-0 des">
-                                <h5 class="font-size-15 ml-4 mb-0">...and receive <strong>$25 coupon for first shopping.</strong></h5>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-5">
-                        <!-- Subscribe Form -->
-                        <form class="form-subcriber d-flex wow fadeIn animated">
-                            <input type="email" class="form-control bg-white font-small" placeholder="Enter your email">
-                            <button class="btn bg-dark text-white" type="submit">Subscribe</button>
-                        </form>
-                        <!-- End Subscribe Form -->
-                    </div>
                 </div>
             </div>
         </section>
@@ -326,18 +298,16 @@
                 <div class="row">
                     <div class="col-lg-4 col-md-6">
                         <div class="widget-about font-md mb-md-5 mb-lg-0">
-                            <div class="logo logo-width-1 wow fadeIn animated">
-                                <a href="index.html"><img src="{% static 'imgs/theme/logo.svg'%}" alt="logo"></a>
-                            </div>
+                            
                             <h5 class="mt-20 mb-10 fw-600 text-grey-4 wow fadeIn animated">Contact</h5>
                             <p class="wow fadeIn animated">
-                                <strong>Address: </strong>562 Wellington Road, Street 32, San Francisco
+                                <strong>Address: </strong>MARADU,VYTLA,<br>KOCHI ERNAKULAM
                             </p>
                             <p class="wow fadeIn animated">
-                                <strong>Phone: </strong>+01 2222 365 /(+91) 01 2345 6789
+                                <strong>Phone: </strong>9562978458
                             </p>
                             <p class="wow fadeIn animated">
-                                <strong>Hours: </strong>10:00 - 18:00, Mon - Sat
+                                <strong>Hours: </strong>24
                             </p>
                             <h5 class="mb-10 mt-30 fw-600 text-grey-4 wow fadeIn animated">Follow Us</h5>
                             <div class="mobile-social-icon wow fadeIn animated mb-sm-5 mb-md-0">
@@ -396,17 +366,16 @@
                     <div class="footer-bottom"></div>
                 </div>
                 <div class="col-lg-6">
-                    <p class="float-md-left font-sm text-muted mb-0">&copy; 2021, <strong class="text-brand">Evara</strong> - HTML Ecommerce Template </p>
+                    <p class="float-md-left font-sm text-muted mb-0">&copy; 2024, <strong class="text-brand"></strong> - DigiHub</p>
                 </div>
                 <div class="col-lg-6">
                     <p class="text-lg-end text-start font-sm text-muted mb-0">
-                        Designed by <a href="http://alithemes.com/" target="_blank">Alithemes.com</a>. All rights reserved
+                        Designed by <a href="#" target="_blank">DigiHub.com</a>. All rights reserved
                     </p>
                 </div>
             </div>
         </div>
     </footer>
-    <!-- Vendor JS-->
     <script src="{% static 'js/vendor/modernizr-3.6.0.min.js' %}"></script>
     <script src="{% static 'js/vendor/jquery-3.6.0.min.js' %}"></script>
     <script src="{% static 'js/vendor/jquery-migrate-3.3.0.min.js'%}"></script>
@@ -420,21 +389,16 @@
     <script src="{% static 'js/plugins/select2.min.js'%}"></script>
     <script src="{% static 'js/plugins/waypoints.js'%}"></script>
     <script src="{% static 'js/plugins/counterup.js'%}"></script>
-    <!-- <script src="{% static 'js/plugins/jquery.countdown.min.js'%}"></script> -->
     <script src="{% static 'js/plugins/images-loaded.js'%}"></script>
     <script src="{% static 'js/plugins/isotope.js'%}"></script>
     <script src="{% static 'js/plugins/scrollup.js'%}"></script>
     <script src="{% static 'js/plugins/jquery.vticker-min.js'%}"></script>
     <script src="{% static 'js/plugins/jquery.theia.sticky.js'%}"></script>
     <script src="{% static 'js/plugins/jquery.elevatezoom.js' %}"></script>
-    <!-- Template  JS -->
     <script src="{% static 'js/main.js'%}"></script>
     <script src="{% static 'js/shop.js'%}"></script>
     
 </div>
 </body>
-
-
-<!-- Mirrored from wp.alithemes.com/html/evara/evara-frontend/index.html by HTTrack Website Copier/3.x [XR&CO'2014], Sun, 01 Aug 2021 15:25:49 GMT -->
 </html>
 

@@ -67,7 +67,7 @@
             border-color: #f5c6cb;
         }
 
-        /* Additional styles for list items in error messages */
+        
         .alert-danger ul {
             list-style-type: none;
             margin: 0;
@@ -78,7 +78,7 @@
             margin-bottom: 5px;
         }
 
-        /* Alternative error message style */
+        
         .error-message {
             color: #721c24;
             background-color: #f8d7da;
@@ -86,12 +86,12 @@
             border-radius: 4px;
             padding: 10px 15px;
             margin-bottom: 20px;
-            max-width: 400px; /* Adjust the max-width as needed */
+            max-width: 400px; 
             margin-left: auto;
             margin-right: auto;
         }
 
-        /* Additional styles for list items in error messages */
+        
         .error-message ul {
             list-style-type: none;
             margin: 0;
@@ -125,7 +125,6 @@
         <label for="referred_by">Referred By:</label>
         <select name="referred_by" id="referred_by" required>
             <option value="">Select Referred By</option>
-            <!-- Iterate over users in your database -->
             {% for user in user %}
                 <option value="{{ user.id }}">{{ user.first_name }}</option>
             {% endfor %}

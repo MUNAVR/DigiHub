@@ -5,6 +5,8 @@ from django.utils.text import slugify
 class Category(models.Model):
     name=models.CharField(max_length=15,db_index=True,unique=True)
     is_active = models.BooleanField(default=True)
+    sale_count=models.CharField(max_length=10,default=0)
+    
 
     
     class Meta:
@@ -20,4 +22,5 @@ class Brand(models.Model):
     category=models.ForeignKey(Category,on_delete=models.CASCADE)
     is_active = models.BooleanField(default=True)
     offer=models.DecimalField(max_digits=5, decimal_places=2,null=True)
+    sale_count=models.CharField(max_length=15,default=0)
 

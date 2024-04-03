@@ -87,3 +87,9 @@ def change_active(request, coupon_id):
     status = "activated" if coupon.active else "deactivated"
     messages.success(request, f"Coupon  {status} successfully.")
     return redirect('coupen_list') 
+
+def coupon_delete(request, id):
+    coupon = get_object_or_404(Coupon, id=id)
+    coupon.delete()
+    messages.success(request, f"Coupon delete successfully.")
+    return redirect("coupen_list")

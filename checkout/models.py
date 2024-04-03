@@ -7,7 +7,7 @@ class Checkout(models.Model):
     user = models.ForeignKey(Customers, on_delete=models.CASCADE)
     cart_items=models.ForeignKey(Cart, on_delete=models.CASCADE,null=True)
     subtotal=models.DecimalField(max_digits=10, decimal_places=2)
-
+    
 class Order(models.Model):
     user = models.ForeignKey(Customers, on_delete=models.CASCADE)
     subtotal=models.DecimalField(max_digits=10, decimal_places=2,null=True)

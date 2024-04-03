@@ -25,8 +25,9 @@
                             <th>Coupon Code</th>
                             <th>Discount</th>
                             <th>Valid To:</th>
-                            <th>Usage Count</th>
+                            
                             <th>Action</th>
+                            <th>Delete</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -35,7 +36,7 @@
                             <td>{{ coupon.code }}</td>
                             <td>{{ coupon.discount }}% </td>
                             <td>{{ coupon.valid_to }}</td>
-                            <td>{{ coupon.usage_count }}/{{ coupon.max_usage }}</td>
+                            
                             <td>
                                 <a href="{% url 'change_active' coupon.id %}">
                                     {% if coupon.active %}
@@ -45,15 +46,21 @@
                                     {% endif %}
                                 </a>
                             </td>
+                            <td>
+                                <form action="{% url 'delete_coupon' id=coupon.id %}" method="post">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-danger">Delete</button>
+                                </form>
+                            </td>
                             
                         </tr>
                         {% endfor %}
                     </tbody>
-                </table> <!-- table-responsive.// -->
+                </table> 
             </div>
-        </div> <!-- card-body end// -->
-    </div> <!-- card end// -->
-</section> <!-- content-main end// -->
+        </div> 
+    </div>
+</section>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 

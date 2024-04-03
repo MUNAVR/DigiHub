@@ -3,7 +3,7 @@ from .models import *
 from django.shortcuts import render, redirect, reverse
 from django.http import JsonResponse
 from cart.models import Cart,CartItems
-from products.models import Product_Variant
+from products.models import Product_Variant,Products
 from django.db.models import Sum
 from django.db.models import Sum, F
 from app_1.models import Address1,Customers,Address2
@@ -24,18 +24,18 @@ def checkout_page(request):
     email = request.session.get('email')
     user = Customers.objects.get(email=email)   
     
-    # Retrieve cart items for the user's cart
+    
     cart_items = Cart.objects.filter(user_id=user)
     
-    # Calculate subtotal for all items in the cart
+   
     subtotal = sum(cart_item.product_variant.sale_price * cart_item.quantity for cart_item in cart_items)
     shipping_charge = 100
     total = subtotal + shipping_charge 
     
-    # Retrieve active coupons
+    
     active_coupons = Coupon.objects.filter(active=True)
 
-    # Exclude coupons that have been used by the user
+   
     used_coupons = CouponUsage.objects.filter(user=user).values_list('coupon', flat=True)
     active_coupons = active_coupons.exclude(id__in=used_coupons)
 
@@ -48,7 +48,7 @@ def checkout_page(request):
         "total": total,
         "add1": add1,
         "add2": add2,
-        "active_coupons": active_coupons  # Pass active coupons to the template
+        "active_coupons": active_coupons 
     }
     return render(request, 'user_panel/checkout.html', context)
 
@@ -88,7 +88,7 @@ def apply_coupon(request):
         discounted_total = total * (1 - coupon.discount / 100)
         request.session['coupon_id'] = coupon_id
         
-        # Create CouponUsage record to track coupon usage by the user
+        
         CouponUsage.objects.create(coupon=coupon, user=user)
 
         return JsonResponse({'discounted_total': discounted_total})
@@ -111,21 +111,24 @@ def place_order(request):
     coupon_id = request.session.get('coupon_id')
 
     if coupon_id:
-        # Apply coupon logic here
+    # Apply coupon logic here
         try:
             coupon = Coupon.objects.get(id=coupon_id, active=True)
             discount_amount = total * (coupon.discount / 100)
             total -= discount_amount
+            coupon_name = coupon.code  # Save the coupon name
         except Coupon.DoesNotExist:
             pass 
+    else:
+        coupon_name ="No Coupon"  # If no coupon is applied, set coupon_name to None
 
-    # Create checkout object
     checkout = Checkout.objects.create(user=user, subtotal=subtotal)
 
-    # Create order object
-    order = Order.objects.create(user=user, total_amount=total,subtotal=subtotal)
+    # Create the order with the total amount and subtotal
+    order = Order.objects.create(user=user, total_amount=total, subtotal=subtotal, coupon=coupon_name)
+
         
-    # Save order products
+    
     for cart_item in cart_items:
         OrderProduct.objects.create(
             user=user,
@@ -135,10 +138,10 @@ def place_order(request):
             price=cart_item.product_variant.sale_price
         )
 
-    # Clear the cart items after placing the order
+   
     cart_items.delete()
 
-    # Fetch order details
+    
     od = Order.objects.filter(user=user).order_by('-order_date').first()
 
     context = {
@@ -159,7 +162,7 @@ def save_order_address(request):
         print(selected_address_id)
         if selected_address_id:
             try:
-                # Fetch the address based on selected_address_id
+                
                 address = None
                 first= "address1"
                 second="address2"
@@ -179,7 +182,7 @@ def save_order_address(request):
                     order = Order.objects.filter(user=user).latest('order_date')
                     print(order)
                     if order:
-                        # Create OrderAddress object
+                        
                         order_address = OrderAddress.objects.create(
                             order=order,
                             user=user,
@@ -198,7 +201,7 @@ def save_order_address(request):
                 pass
         return JsonResponse({'error': 'Address not found'}, status=400)
     else:
-            # Default to saving Address1 if no address is selected
+           
             try:
                 address = Address1.objects.get(user=user)
                 order = Order.objects.filter(user=user).latest('order_date')
@@ -225,7 +228,7 @@ def save_order_address(request):
 def razorpay_payment(request):
     email = request.session.get('email')
     if email is None:
-        return redirect('checkout')  # Redirect to checkout page if email is not in session
+        return redirect('checkout') 
     
     try:
         user = Customers.objects.get(email=email)
@@ -238,13 +241,39 @@ def razorpay_payment(request):
         coupon_id = request.session.get('coupon_id')
 
         if coupon_id:
-            # Apply coupon logic here
+    # Apply coupon logic here
             try:
                 coupon = Coupon.objects.get(id=coupon_id, active=True)
                 discount_amount = total * (coupon.discount / 100)
                 total -= discount_amount
+                coupon_name = coupon.code  # Save the coupon name
             except Coupon.DoesNotExist:
                 pass 
+        else:
+            coupon_name ="No Coupon"  # If no coupon is applied, set coupon_name to None
+
+        
+        checkout = Checkout.objects.create(user=user, subtotal=subtotal)
+        checkout.save()
+        latest_order=Order.objects.filter(user=user).order_by('-order_date').first()
+        if latest_order and latest_order.total_amount == total and latest_order.subtotal == subtotal:
+            # If details match, redirect back to checkout page
+            pass
+        else:
+            # If details don't match, create a new order
+            order = Order.objects.create(user=user, total_amount=total, subtotal=subtotal, payment_status="Failed", payment_method="Online",coupon=coupon_name)
+            order.save()
+            for cart_item in cart_items:
+                OrderProduct.objects.create(
+                user=user,
+                order=order,
+                product_name=cart_item.product_variant.product.product_name,
+                quantity=cart_item.quantity,
+                price=cart_item.product_variant.sale_price
+        )
+        
+        order_id = Order.objects.order_by('-order_date').first()
+
         amount = total  # Example amount in paise, change as per your requirement
         currency = "INR"
 
@@ -255,24 +284,53 @@ def razorpay_payment(request):
             "currency": currency,
             "payment_capture": '1'  # Auto capture payment
         })
-        print(coupon_id)
+
+        email = request.session.get('email')
+        user = Customers.objects.get(email=email)   
+        
+        
+        cart_items = Cart.objects.filter(user_id=user)
+        
+    
+        subtotal = sum(cart_item.product_variant.sale_price * cart_item.quantity for cart_item in cart_items)
+        shipping_charge = 100
+        total = subtotal + shipping_charge 
+        
+        
+        active_coupons = Coupon.objects.filter(active=True)
+
+    
+        used_coupons = CouponUsage.objects.filter(user=user).values_list('coupon', flat=True)
+        active_coupons = active_coupons.exclude(id__in=used_coupons)
+
+        add1 = Address1.objects.filter(user=user)
+        add2 = Address2.objects.filter(user=user)
+
         context = {
             "payment_details": {
-                "id": payment['id'],  # Use the generated order ID
+                "id": payment['id'],  
                 "amount": int(amount * 100),  # Convert to paise
                 "currency": currency,
                 "key": "rzp_test_Os7R5CUHs9KARd", 
                 "email": email, 
                 "coupon":coupon_id,
-            }
+            },
+        "cart": cart_items,
+        "subtotal": subtotal,
+        "total": total,
+        "add1": add1,
+        "add2": add2,
+        "active_coupons": active_coupons,
+        "order_id":order_id
+            
         }
-        return render(request, "user_panel/razorpay.html", context)
+        return render(request, "user_panel/checkout.html", context)
     except Customers.DoesNotExist:
         messages.error(request, 'Customer not found.')
     except Exception as e:
         messages.error(request, f'Razorpay payment failed: {str(e)}')
-    
     return redirect('checkout') 
+
 
 
 from django.views.decorators.csrf import csrf_exempt
@@ -282,21 +340,19 @@ from django.http import HttpResponse
 @csrf_exempt
 def handle_razorpay_success(request):
     if request.method == "POST":
-        # Extract payment information from the POST request
+       
         razorpay_payment_id = request.POST.get('razorpay_payment_id')
         razorpay_order_id = request.POST.get('razorpay_order_id')
         email = request.POST.get('email')
         print(email)
         coupon_id = request.POST.get('coupon_id')
+        order_id_str = request.POST.get('order_id')  # Get the order ID as a string
+        order_id = int(order_id_str.split('(')[1].split(')')[0])   
 
-        print(coupon_id)    
-
-        # Add your logic to mark the order as paid or any other necessary actions
-        # For example, create a new order and save it to the database
         try:
             user = Customers.objects.get(email=email)
         except Customers.DoesNotExist:
-            return HttpResponse('Invalid email', status=400)  # Return a 400 response for an invalid email
+            return HttpResponse('Invalid email', status=400)  
         
         cart_items = Cart.objects.filter(user_id=user)
 
@@ -312,84 +368,31 @@ def handle_razorpay_success(request):
                 discount_amount = total * (coupon.discount / 100)
                 total -= discount_amount
             except Coupon.DoesNotExist:
-                pass  # Handle the case where the coupon does not exist
+                pass 
         
-        # Create checkout and order objects
+        
         checkout = Checkout(user=user, subtotal=subtotal)
         checkout.save()
 
-        order = Order(user=user, total_amount=total, payment_status="paid", payment_method="Online",subtotal=subtotal)
+        order = Order.objects.get(id=order_id)
+        order.payment_status = "paid"
         order.save()
-
-        for cart_item in cart_items:
-            OrderProduct.objects.create(
-            user=user,
-            order=order,
-            product_name=cart_item.product_variant.product.product_name,
-            quantity=cart_item.quantity,
-            price=cart_item.product_variant.sale_price
-        )
-
-        # Clear the cart after placing the order
+        
         cart_items.delete()
 
         od = Order.objects.filter(user=user).order_by('-order_date').first()
 
-        # Pass context data to the success template
+        
         context = {
             "total_amount": total,
             "order": od,
         }
 
-        # Render the success template with context data
+        
         return render(request, 'user_panel/order_succes.html', context)
     else:
         return render(request, 'user_panel/checkout.html')
 
-
-
-@csrf_exempt
-def handle_razorpay_failure(request):
-    if request.method == "POST":
-        # Extract payment information from the POST request
-        razorpay_order_id = request.POST.get('razorpay_order_id')
-        email = request.POST.get('email')
-        coupon_id = request.POST.get('coupon_id')
-
-        try:
-            # Retrieve the user based on the email
-            user = Customers.objects.get(email=email)
-        except Customers.DoesNotExist:
-            return HttpResponse('Invalid email', status=400)
-
-        # Retrieve cart items for the user
-        cart_items = Cart.objects.filter(user_id=user)
-
-        # Calculate total amount including shipping charge
-        subtotal = sum(cart_item.product_variant.sale_price * cart_item.quantity for cart_item in cart_items)
-        shipping_charge = 100
-        total = subtotal + shipping_charge
-
-        # Apply coupon logic if coupon ID is provided
-        if coupon_id:
-            try:
-                coupon = Coupon.objects.get(id=coupon_id, active=True)
-                discount_amount = total * (coupon.discount / 100)
-                total -= discount_amount
-            except Coupon.DoesNotExist:
-                pass  # Handle the case where the coupon does not exist
-
-        # Update the order status to failed
-        order = Order(user=user, total_amount=total, payment_status="failed", payment_method="Online",order_status="failed")
-        order.save()
-
-        # Additional logic for handling failed payments can be added here
-        
-        # Add a message for the user
-        messages.error(request, 'Payment failed. Please try again.')
-
-        # Redirect to the appropriate page
-        return render(request,'user_panel/failure.html')
 
 
 from django.db import transaction
@@ -399,14 +402,13 @@ def wallet_payment(request):
     email = request.session.get('email')
     user = Customers.objects.get(email=email)
     
-    # Check if the user has a wallet
+    
     try:
         wallet = Wallet.objects.get(user=user)
     except Wallet.DoesNotExist:
         messages.error(request, "You don't have a wallet. Please add funds to your wallet first.")
-        return redirect('wallet')  # Redirect to the wallet page
+        return redirect('wallet') 
 
-    # Calculate total amount for the order
     cart_items = Cart.objects.filter(user_id=user)
     subtotal = sum(cart_item.product_variant.sale_price * cart_item.quantity for cart_item in cart_items)
     shipping_charge = 100
@@ -415,21 +417,23 @@ def wallet_payment(request):
     coupon_id = request.session.get('coupon_id')
 
     if coupon_id:
-        # Apply coupon logic here
-        try:
-            coupon = Coupon.objects.get(id=coupon_id, active=True)
-            discount_amount = total * (coupon.discount / 100)
-            total -= discount_amount
-        except Coupon.DoesNotExist:
-            pass 
+    # Apply coupon logic here
+            try:
+                coupon = Coupon.objects.get(id=coupon_id, active=True)
+                discount_amount = total * (coupon.discount / 100)
+                total -= discount_amount
+                coupon_name = coupon.code  # Save the coupon name
+            except Coupon.DoesNotExist:
+                pass 
+    else:
+            coupon_name ="No Coupon" 
 
     # Check if the wallet balance is sufficient for the order
     if wallet.balance < total:
         messages.error(request, "Insufficient funds in your wallet. Please add funds to your wallet.")
-        return redirect('wallet')  # Redirect to the wallet page
+        return redirect('wallet') 
     
-    # Proceed with creating the order
-    order = Order(user=user, total_amount=total, payment_method="wallet", payment_status="paid",subtotal=subtotal)
+    order = Order(user=user, total_amount=total, payment_method="wallet", payment_status="paid",subtotal=subtotal,coupon=coupon_name)
     order.save()
 
     for cart_item in cart_items:
@@ -440,18 +444,17 @@ def wallet_payment(request):
             quantity=cart_item.quantity,
             price=cart_item.product_variant.sale_price
         )
-    # Deduct payment amount from the wallet balance and create a transaction record
+
     wallet.balance -= total
     wallet.save()
     transaction = Transaction.objects.create(wallet=wallet, amount=total, transaction_type="Debit")
 
-    # Fetch order details
     od = Order.objects.filter(user=user).order_by('-order_date').first()
 
     context = {
         "total_amount": total,
         "order": od,
-        "transaction": transaction  # Pass transaction details to the template
+        "transaction": transaction  
     }
     return render(request, "user_panel/order_succes.html", context)
 
@@ -469,7 +472,7 @@ def all_orders(request):
 
     order_list = Order.objects.filter(user=user).order_by('-order_date')
     
-    paginator = Paginator(order_list, 10)  # Show 10 orders per page
+    paginator = Paginator(order_list, 10)  
 
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -499,14 +502,158 @@ def order_details(request, id):
         }
         return render(request, "user_panel/order_details.html", context)
     except Customers.DoesNotExist:
-        # Handle case where customer doesn't exist
+        
         return HttpResponse("Customer not found")
     except Order.DoesNotExist:
-        # Handle case where order doesn't exist
+        
         return HttpResponse("Order not found")
     except OrderAddress.DoesNotExist:
-        # Handle case where order address doesn't exist
+        
         return HttpResponse("Order address not found")
+
+from django.http import HttpResponse
+from django.template.loader import get_template
+from django.conf import settings
+from io import BytesIO
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate
+from django.template.loader import render_to_string
+from django.utils.safestring import SafeString
+from reportlab.platypus import SimpleDocTemplate, Paragraph
+from reportlab.lib.styles import getSampleStyleSheet
+
+from reportlab.lib.pagesizes import letter
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import letter
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle
+from reportlab.lib import colors
+
+from reportlab.lib.pagesizes import letter
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle
+from reportlab.lib import colors
+
+from reportlab.lib.pagesizes import letter
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle
+from reportlab.lib import colors
+
+from reportlab.lib.pagesizes import letter
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle
+from reportlab.lib import colors
+
+def generate_pdf_invoice(request, order_id):
+    try:
+        order = Order.objects.get(id=order_id)
+    except Order.DoesNotExist:
+        return HttpResponse("Order not found")
+
+    # Get user and address details
+    email = request.session.get('email')
+    user = Customers.objects.get(email=email)
+    address = get_object_or_404(OrderAddress, order=order)
+
+    # Define filename for the PDF
+    pdf_filename = f"invoice_{order_id}_{user.first_name.replace(' ', '_')}.pdf"
+
+    # Set response headers for PDF
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="{pdf_filename}"'
+
+    # Initialize buffer and document
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=letter)
+
+    # Define styles
+    styles = getSampleStyleSheet()
+    header_style = ParagraphStyle(name='CenteredHeading', alignment=1, fontName='Helvetica-Bold', fontSize=16)
+    paragraph_style = ParagraphStyle(name='Normal', fontName='Helvetica', fontSize=12, leading=15)
+    table_style = TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.white),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+    ])
+
+    # Build content
+    content = []
+
+    # Add main heading (Invoice) centered with some space after it
+    content.append(Paragraph("Invoice", header_style))
+    content.append(Paragraph("<br/><br/>", paragraph_style))
+
+    # Add company and customer details in two separate paragraphs
+    company_details = [
+        "DigiHub",
+        "Location: Maradu, Kochi, Ernakulam, Kerala",
+        "Phone Number: 9562978458"
+    ]
+    company_details_paragraphs = [Paragraph(detail, paragraph_style) for detail in company_details]
+
+    customer_details = [
+        f"Customer: {user.first_name}",
+        f"Email: {user.email}",
+        f"Shipping Address: {address.address}, {address.locality}, {address.district}, {address.state}, {address.pincode}"
+    ]
+    customer_details_paragraphs = [Paragraph(detail, paragraph_style) for detail in customer_details]
+
+    # Add company and customer details in two separate columns
+    data = [
+        [company_details_paragraphs[0], customer_details_paragraphs[0]],
+        [company_details_paragraphs[1], customer_details_paragraphs[1]],
+        [company_details_paragraphs[2], customer_details_paragraphs[2]]
+    ]
+    table = Table(data, colWidths=[300, 300])
+    table.setStyle(table_style)
+    content.append(table)
+
+    # Get products related to the order
+    products = OrderProduct.objects.filter(order=order)
+
+    # Add products table
+    product_data = [['Product Name', 'Quantity', 'Price']]
+    for product in products:
+        product_data.append([product.product_name, product.quantity, product.price])
+    product_table = Table(product_data)
+    product_table.setStyle(table_style)
+    content.append(product_table)
+
+    # Add a line gap after product details list
+    content.append(Paragraph("<br/><br/>", paragraph_style))
+
+    # Add subtotal
+    subtotal_paragraph = Paragraph(f"Subtotal: ₹ {order.subtotal}", paragraph_style)
+    content.append(subtotal_paragraph)
+
+    # Add shipping charge
+    shipping_charge_paragraph = Paragraph("Shipping Charge: ₹ 100", paragraph_style)
+    content.append(shipping_charge_paragraph)
+
+    # Add used coupon if available
+    if order.coupon != "No Coupon":
+        used_coupon_paragraph = Paragraph(f"Used Coupon: {order.coupon}", paragraph_style)
+        content.append(used_coupon_paragraph)
+
+    # Add grand total
+    grand_total_paragraph = Paragraph(f"Grand Total: ₹ {order.total_amount}", paragraph_style)
+    content.append(grand_total_paragraph)
+
+    # Build PDF
+    doc.build(content)
+    pdf = buffer.getvalue()
+    buffer.close()
+    response.write(pdf)
+
+    return response
+
+
+
 
 
 
@@ -519,13 +666,13 @@ def cancel_order(request, order_id):
         elif order.order_status == 'Pending' and order.payment_status == 'Pending':
             order.order_status = 'Cancelled'
             order.save()
-            return_products_to_inventory(order)  # Return products to inventory
+            return_products_to_inventory(order)  
             messages.success(request, 'Order has been cancelled successfully.')
         elif order.payment_method in ['Online', 'wallet']:
             refund_to_wallet(request, order)
             order.order_status = 'Cancelled'
             order.save()
-            return_products_to_inventory(order)  # Return products to inventory
+            return_products_to_inventory(order) 
         else:
             messages.error(request, 'Order cannot be cancelled at this time.')
     except Order.DoesNotExist:
@@ -533,7 +680,7 @@ def cancel_order(request, order_id):
     return redirect('all_orders')
 
 def return_products_to_inventory(order):
-    # Return products to inventory and update quantity
+    
     order_products = OrderProduct.objects.filter(order=order)
     for order_product in order_products:
         product_name = order_product.product_name
@@ -546,11 +693,11 @@ def return_order(request, order_id):
         try:
             order = Order.objects.get(id=order_id)
             if order.order_status == 'Completed':
-                # Update order status to 'Returned'
+                
                 order.order_status = 'Returned'
                 order.save()
 
-                # Return products to inventory and update quantity
+                
                 order_products = OrderProduct.objects.filter(order=order)
                 for order_product in order_products:
                     product_name = order_product.product_name
@@ -558,12 +705,12 @@ def return_order(request, order_id):
                     product_variant.stock += order_product.quantity
                     product_variant.save()
 
-                # Refund amount to user's wallet
+               
                 user_wallet = Wallet.objects.get(user=order.user)
                 user_wallet.balance += order.total_amount
                 user_wallet.save()
 
-                # Record wallet transaction
+               
                 Transaction.objects.create(
                     wallet=user_wallet,
                     amount=order.total_amount,
@@ -595,7 +742,7 @@ def refund_to_wallet(request, order):
 
 def continue_shoping(request,id):
     email = request.session.get('email')
-    order=Order.objects.get(id=id)
+    order = Order.objects.get(id=id)
     user = Customers.objects.get(email=email)
     latest_order_address = OrderAddress.objects.filter(user=user).order_by('-order__order_date').first()
     latest_order_address.order=order
@@ -603,3 +750,43 @@ def continue_shoping(request,id):
     return redirect('user:index')
 
 
+def coutinue_payment(request,id):
+
+    email = request.session.get('email')
+    user = Customers.objects.get(email=email)
+
+    order = get_object_or_404(Order, id=id)
+    subtotal=order.subtotal
+    total=order.total_amount
+
+    add1 = Address1.objects.filter(user=user)
+    add2 = Address2.objects.filter(user=user)
+
+    active_coupons = Coupon.objects.filter(active=True)
+    used_coupons = CouponUsage.objects.filter(user=user).values_list('coupon', flat=True)
+    active_coupons = active_coupons.exclude(id__in=used_coupons)
+
+    cart_items = OrderProduct.objects.filter(order=order)
+    product_names = set(order_product.product_name for order_product in cart_items)
+    products = Products.objects.filter(product_name__in=product_names)
+    product_images = []  # List to store product images
+    
+    # Iterate over products
+    for product in products:
+        # Retrieve the product variant associated with the product
+        product_variant = Product_Variant.objects.filter(product=product).first()
+        
+        # Add thumbnail image of the product variant to the list
+        if product_variant:
+            product_images.append(product_variant.thumbnail_image.url)
+
+    context = {
+        "cart": cart_items,
+        "subtotal": subtotal,
+        "total": total,
+        "add1": add1,
+        "add2": add2,
+        "active_coupons": active_coupons,
+        "product_images": product_images, 
+    }
+    return render(request,"user_panel/checkout.html",context)   
