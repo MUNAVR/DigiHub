@@ -12,31 +12,20 @@
 <body>
 	<div class="wrapper">
 		<h2>Forgot Password</h2>
+		<div class="alert alert-danger">
+			{% for message in messages %}
+				 {{ message }}
+			{% endfor %}
+		</div>
 		<form id="form" method="POST">
 			{% csrf_token %}
 			<div class="input-box">
 				<input type="text" placeholder="Your Email" id="old_password" name="email" required>
 			</div>
-			<div class="input-box">
-				<input type="number" placeholder="Your Contacts" id="new_password" name="number" required>
-			</div>
-            <div class="input-box">
-				<input type="password" placeholder="New Password" id="confirm_password" name="new_pass1" required>
-			</div>
-			<div class="input-box">
-				<input type="password" placeholder="Confirm Password" id="confirm_password" name="new_pass2" required>
-			</div>
 			<div class="input-box button">
-				<input type="submit" value="save Password">
+				<input type="submit" value="send link">
 			</div>
 		</form>
-		<div id="error-container">
-		</div>
-        <div class="alert alert-danger">
-        {% for message in messages %}
-             {{ message }}
-        {% endfor %}
-        </div>
 	</div>
 </body>
 

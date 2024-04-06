@@ -21,7 +21,7 @@ urlpatterns = [
     path('unblock/<int:id>/', views.unblock_user, name='unblock_user'),
 
     path("order_list",views.order_list,name="order_list"),
-    path("order_cancel/<order_id>",views.cancel_orderAdmin,name="order_cancel"),
+    path("order_cancel/<order_id>",views.reject_orderAdmin,name="order_cancel"),
     path("change_status/<order_id>",views.change_status,name="change_status"),
 
     path('best_selling_product',views.best_selling_product, name='best_selling_product'),

@@ -5,13 +5,14 @@ app_name="user"
 
 urlpatterns = [
     path('login', views.login,name='login'),
-    path('forgot_pass',views.forgot_pass,name="forgot_pass"),
+    # path('forgot_pass',views.forgot_pass,name="forgot_pass"),
+    path('forgot_pass' ,views.ForgetPassword ,name="forget_password"),
+    path('change_password',views.ChangePassword ,name="change_password"),
     
     path('signup',views.signup,name='signup'),
     path('logout',views.logout,name='logout'),
     path('',views.index,name='index'),
     path('sort_products/', views.sort_products, name='sort_products'),
-    # path('sent_otp',views.sent_otp,name="send_otp"),
     path('verify_otp',views.verify_otp,name="verify_otp"),
     path('resend_otp',views.resend_otp,name="otp"),
     path('product_details/<id>',views.product_details,name="product_details"),

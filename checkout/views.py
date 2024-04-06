@@ -521,30 +521,11 @@ from django.template.loader import render_to_string
 from django.utils.safestring import SafeString
 from reportlab.platypus import SimpleDocTemplate, Paragraph
 from reportlab.lib.styles import getSampleStyleSheet
-
-from reportlab.lib.pagesizes import letter
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle
-from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle
 from reportlab.lib import colors
 
-from reportlab.lib.pagesizes import letter
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle
-from reportlab.lib import colors
-
-from reportlab.lib.pagesizes import letter
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle
-from reportlab.lib import colors
-
-from reportlab.lib.pagesizes import letter
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle
-from reportlab.lib import colors
 
 def generate_pdf_invoice(request, order_id):
     try:
@@ -552,7 +533,7 @@ def generate_pdf_invoice(request, order_id):
     except Order.DoesNotExist:
         return HttpResponse("Order not found")
 
-    # Get user and address details
+    
     email = request.session.get('email')
     user = Customers.objects.get(email=email)
     address = get_object_or_404(OrderAddress, order=order)
@@ -560,7 +541,7 @@ def generate_pdf_invoice(request, order_id):
     # Define filename for the PDF
     pdf_filename = f"invoice_{order_id}_{user.first_name.replace(' ', '_')}.pdf"
 
-    # Set response headers for PDF
+    
     response = HttpResponse(content_type='application/pdf')
     response['Content-Disposition'] = f'attachment; filename="{pdf_filename}"'
 
@@ -568,7 +549,7 @@ def generate_pdf_invoice(request, order_id):
     buffer = BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=letter)
 
-    # Define styles
+    
     styles = getSampleStyleSheet()
     header_style = ParagraphStyle(name='CenteredHeading', alignment=1, fontName='Helvetica-Bold', fontSize=16)
     paragraph_style = ParagraphStyle(name='Normal', fontName='Helvetica', fontSize=12, leading=15)
@@ -581,17 +562,17 @@ def generate_pdf_invoice(request, order_id):
         ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
     ])
 
-    # Build content
+    
     content = []
 
-    # Add main heading (Invoice) centered with some space after it
     content.append(Paragraph("Invoice", header_style))
     content.append(Paragraph("<br/><br/>", paragraph_style))
 
-    # Add company and customer details in two separate paragraphs
+   
     company_details = [
         "DigiHub",
-        "Location: Maradu, Kochi, Ernakulam, Kerala",
+        "Location: Maradu, Kochi", 
+        "Ernakulam, Kerala",
         "Phone Number: 9562978458"
     ]
     company_details_paragraphs = [Paragraph(detail, paragraph_style) for detail in company_details]
@@ -599,7 +580,7 @@ def generate_pdf_invoice(request, order_id):
     customer_details = [
         f"Customer: {user.first_name}",
         f"Email: {user.email}",
-        f"Shipping Address: {address.address}, {address.locality}, {address.district}, {address.state}, {address.pincode}"
+        f"Delivery Address: {address.address}, {address.locality}, {address.district}, {address.state}, {address.pincode}"
     ]
     customer_details_paragraphs = [Paragraph(detail, paragraph_style) for detail in customer_details]
 
@@ -613,10 +594,10 @@ def generate_pdf_invoice(request, order_id):
     table.setStyle(table_style)
     content.append(table)
 
-    # Get products related to the order
+    
     products = OrderProduct.objects.filter(order=order)
 
-    # Add products table
+    
     product_data = [['Product Name', 'Quantity', 'Price']]
     for product in products:
         product_data.append([product.product_name, product.quantity, product.price])
@@ -627,20 +608,20 @@ def generate_pdf_invoice(request, order_id):
     # Add a line gap after product details list
     content.append(Paragraph("<br/><br/>", paragraph_style))
 
-    # Add subtotal
+   
     subtotal_paragraph = Paragraph(f"Subtotal: ₹ {order.subtotal}", paragraph_style)
     content.append(subtotal_paragraph)
 
-    # Add shipping charge
+   
     shipping_charge_paragraph = Paragraph("Shipping Charge: ₹ 100", paragraph_style)
     content.append(shipping_charge_paragraph)
 
-    # Add used coupon if available
+    
     if order.coupon != "No Coupon":
         used_coupon_paragraph = Paragraph(f"Used Coupon: {order.coupon}", paragraph_style)
         content.append(used_coupon_paragraph)
 
-    # Add grand total
+    
     grand_total_paragraph = Paragraph(f"Grand Total: ₹ {order.total_amount}", paragraph_style)
     content.append(grand_total_paragraph)
 
@@ -651,10 +632,6 @@ def generate_pdf_invoice(request, order_id):
     response.write(pdf)
 
     return response
-
-
-
-
 
 
 
@@ -769,14 +746,14 @@ def coutinue_payment(request,id):
     cart_items = OrderProduct.objects.filter(order=order)
     product_names = set(order_product.product_name for order_product in cart_items)
     products = Products.objects.filter(product_name__in=product_names)
-    product_images = []  # List to store product images
+    product_images = [] 
     
-    # Iterate over products
+   
     for product in products:
-        # Retrieve the product variant associated with the product
+        
         product_variant = Product_Variant.objects.filter(product=product).first()
         
-        # Add thumbnail image of the product variant to the list
+       
         if product_variant:
             product_images.append(product_variant.thumbnail_image.url)
 

@@ -21,8 +21,9 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 def wallet(request):
     current_email = request.session['email']
     user = Customers.objects.get(email=current_email)
+    wallet = Wallet.objects.get(user=user)
 
-    transactions = Transaction.objects.all().order_by('-date_created')
+    transactions = Transaction.objects.filter(wallet=wallet).order_by('-date_created')
     paginator = Paginator(transactions, 10)  # Show 10 transactions per page
 
     page_number = request.GET.get('page')
@@ -35,7 +36,7 @@ def wallet(request):
 
     # Assuming you have a way to retrieve the wallet object for the current user
     wallet = Wallet.objects.get(user=user)
-
+    print(wallet)
     return render(request, 'user_panel/wallet.html', {'page_obj': page_obj, 'wallet': wallet})
 
 

@@ -28,6 +28,7 @@ from wallet.models import Wallet
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.shortcuts import get_object_or_404
 from django.views.decorators.cache import cache_control
+from .helpers import send_forget_password_mail
 
 
 def signup(request):
@@ -74,7 +75,7 @@ def signup(request):
             return redirect('user:signup')
         
         
-        if not validate_referred(referred_by):
+        if validate_referred(referred_by):
             messages.error(request, 'Referred ID can only contain letters and digits, and must not be all the same character.')
             return redirect('user:signup')
         
@@ -150,13 +151,12 @@ def verify_otp(request):
                 user= Customers(first_name=fname, last_name=lname, email=email, phone=contact, password=password)
                 user.save()
 
-            
-            if referred_by:
+                wallet, created = Wallet.objects.get_or_create(user=user)
+
+                # If the user was referred, add referral amount to the wallet
+                if referred_by:
                     referred_offer = ReferralOffer.objects.get(referral_code=referred_by)
                     referred_amount = referred_offer.referral_amount
-                    
-                    wallet, created = Wallet.objects.get_or_create(user=user)
-                    
                     wallet.balance += referred_amount
                     wallet.save()
                 
@@ -234,53 +234,100 @@ def login(request):
 
 
 
-def forgot_pass(request):
-    if request.method == 'POST':
-        email = request.POST.get('email')
-        number = request.POST.get('number')
-        password1 = request.POST.get('new_pass1')
-        password2 = request.POST.get('new_pass2')
+# def forgot_pass(request):
+#     if request.method == 'POST':
+#         email = request.POST.get('email')
+#         number = request.POST.get('number')
+#         password1 = request.POST.get('new_pass1')
+#         password2 = request.POST.get('new_pass2')
         
-        try:
-            user = Customers.objects.get(email=email)
+#         try:
+#             user = Customers.objects.get(email=email)
             
-            # Check if contact number matches the one stored in the database
-            if str(user.phone).strip() != str(number).strip():
-                messages.error(request, "Contact number does not match")
-                return redirect('user:forgot_pass')
+#             # Check if contact number matches the one stored in the database
+#             if str(user.phone).strip() != str(number).strip():
+#                 messages.error(request, "Contact number does not match")
+#                 return redirect('user:forgot_pass')
 
             
            
-            if not validate_contact(number):
-                messages.error(request, 'Invalid contact number format.')
-                return redirect('user:forgot_pass')
+#             if not validate_contact(number):
+#                 messages.error(request, 'Invalid contact number format.')
+#                 return redirect('user:forgot_pass')
             
             
-            if password1 != password2:
-                messages.error(request, "New passwords do not match")
-                return redirect('user:forgot_pass')
-            elif not validate_password(password1):
-                messages.error(request, 'Password must be at least 6 characters long, including one number, and no spaces.')
-                return redirect('user:forgot_pass')
+#             if password1 != password2:
+#                 messages.error(request, "New passwords do not match")
+#                 return redirect('user:forgot_pass')
+#             elif not validate_password(password1):
+#                 messages.error(request, 'Password must be at least 6 characters long, including one number, and no spaces.')
+#                 return redirect('user:forgot_pass')
             
             
-            user.password=password1
-            user.save()
-            messages.success(request, "Password changed successfully. Please log in with your new password.")
-            return redirect('user:login')
+#             user.password=password1
+#             user.save()
+#             messages.success(request, "Password changed successfully. Please log in with your new password.")
+#             return redirect('user:login')
         
-        except Customers.DoesNotExist:
-            messages.error(request, "User does not exist")
-            return redirect('user:forgot_pass')
+#         except Customers.DoesNotExist:
+#             messages.error(request, "User does not exist")
+#             return redirect('user:forgot_pass')
     
-    return render(request, "user_panel/forgot_panel.html")
-
+#     return render(request, "user_panel/forgot_panel.html")
 
 
 def logout(request):
     if 'email' in request.session:
         request.session.flush()
     return redirect('user:login')
+
+
+import uuid
+def ForgetPassword(request):
+    try:
+        if request.method == 'POST':
+            email = request.POST.get('email')
+            
+            if not Customers.objects.filter(email=email).first():
+                messages.success(request, 'Not user found with this email.')
+                return redirect('user:forget_password')
+            
+            user_obj = Customers.objects.get(email = email)
+            token = str(uuid.uuid4())
+            send_forget_password_mail(email)
+            messages.success(request, 'email is sent.')
+            return redirect('user:forget_password')
+            
+    except Exception as e:
+        print(e)
+    return render(request , "user_panel/forgot_panel.html")
+
+
+def ChangePassword(request):
+        if request.method == 'POST':
+            new_password = request.POST.get('new_password')
+            confirm_password = request.POST.get('reconfirm_password')
+            first_name= request.POST.get('first_name')
+            
+            name=Customers.objects.get(first_name=first_name)
+            if name is  None:
+                messages.success(request, 'No user id found.')
+                return redirect('user:change-password')
+                
+            
+            if  new_password != confirm_password:
+                messages.success(request, 'both should  be equal.')
+                return redirect('user:change-password')
+                         
+            
+            user_obj =Customers.objects.get(first_name=first_name)
+            user_obj.password=new_password
+            user_obj.save()
+            messages.success(request,'Password changed successfully. Please log in with your new password.')
+            return redirect('user:login')
+        
+        return render(request ,'user_panel/change-password.html')
+
 
 
 

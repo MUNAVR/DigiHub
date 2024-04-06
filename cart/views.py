@@ -7,7 +7,7 @@ from django.http import JsonResponse
 from django.contrib import messages
 from app_1.decorators import check_blocked
 from django.shortcuts import redirect, get_object_or_404
-
+from decimal import Decimal
 from wishlist.models import Wishlist
 
 
@@ -17,19 +17,21 @@ from wishlist.models import Wishlist
 def shop_cart(request):
     if 'email' not in request.session:
         return redirect('user:login')  
-
     
     email = request.session['email']
-
-   
     user = Customers.objects.get(email=email)
-
     cart_items = Cart.objects.filter(user_id=user)
-
+    
+    # Calculate total amount
+    total = Decimal(0)
+    for cart_item in cart_items:
+        total += cart_item.quantity * cart_item.product_variant.sale_price
+    
     context = {
         'cart_items': cart_items,
+        'total': total,
     }
-
+    
     return render(request, "user_panel/shop_cart.html", context)
 
 

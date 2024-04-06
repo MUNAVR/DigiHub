@@ -23,6 +23,7 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import cache_control
 from checkout.models import OrderProduct
 from products.models import Product_Variant,Products
+from wallet.models import Wallet,Transaction
 
 
 
@@ -418,20 +419,37 @@ def order_list(request):
     }
     return render(request, "admin_panel/order_list.html", context)
 
-def cancel_orderAdmin(request, order_id):
+def reject_orderAdmin(request, order_id):
     try:
         order = Order.objects.get(id=order_id)
         
-        
         if order.order_status == 'Cancelled':
             messages.error(request, 'Order has already been cancelled.')
-        elif order.order_status == 'Pending' and order.payment_status == 'Pending':
-           
+        else:
+          
             order.order_status = 'Cancelled'
             order.save()
-            messages.success(request, 'Order has been cancelled successfully.')
-        else:
-            messages.error(request, 'Order cannot be cancelled at this time.')
+            
+            
+            order_products = OrderProduct.objects.filter(order=order)
+            for order_product in order_products:
+                product_variant = Product_Variant.objects.filter(product__product_name=order_product.product_name)
+                product_variant.stock += order_product.quantity
+                product_variant.save()
+            
+            messages.success(request, 'Order has been rejected successfully.')
+            
+           
+            if order.payment_status == 'Paid' and order.order_status == 'Pending':
+                wallet = Wallet.objects.get(user=order.user)
+                wallet.balance += order.total_amount
+                wallet.save()
+                Transaction.objects.create(wallet=wallet, amount=order.total_amount, transaction_type='Credit')
+                messages.info(request, 'Amount refunded to wallet successfully.')
+            
+            elif order.payment_status == 'Pending':
+               
+                pass
     except Order.DoesNotExist:
         messages.error(request, 'Order not found.')
 
