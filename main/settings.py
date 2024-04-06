@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 from pathlib import Path
 import os
+from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -21,12 +22,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-dfo^o*x^ktxb5u)jm7xf+e6h%43gn342=j&($i_ha^b$@mne_t'
+SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 # SESSION_COOKIE_SECURE = False
 # Application definition
@@ -100,9 +101,9 @@ WSGI_APPLICATION = 'main.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'digi_hub',
-        'USER': 'munavar',
-        'PASSWORD': 'jaseem',
+        'NAME': config('NAME'),
+        'USER': config('USER'),
+        'PASSWORD': config('PASSWORD'),
         'HOST': 'localhost',
         'PORT': ''
     }
@@ -169,25 +170,8 @@ AUTHENTICATION_BACKENDS = [
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
 LOGIN_URL = '/login/' 
-# SOCIALACCOUNT_PROVIDERS = {
-#     'google': {
-#         'APP': {
-#             'client_id': '535917156810-m4qbunun6o9obupdu5cq4svfq5u2cvph.apps.googleusercontent.com',
-#             'secret': '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',
-#             'key': ''
-#         }
-#     },
-#     # Add more providers as needed
-# }
-
 SITE_ID = 1
-
-
 SOCIALACCOUNT_QUERY_EMAIL= True
-
-
-
-
 
 # email validation
 
@@ -195,8 +179,8 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'munavarmjp@gmail.com'
-EMAIL_HOST_PASSWORD = 'bcnz owta nucw wwqw'
+EMAIL_HOST_USER = config('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
 
 
 
