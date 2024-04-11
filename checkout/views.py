@@ -95,9 +95,6 @@ def apply_coupon(request):
     else:
         return JsonResponse({'error': 'Invalid request'}, status=400)
 
-
-  
-
     
 def place_order(request):
     email = request.session.get('email')
@@ -154,7 +151,6 @@ def place_order(request):
 
 @csrf_exempt
 def save_order_address(request):
-    
     if request.method == 'POST' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         email = request.session.get('email')
         user = Customers.objects.get(email=email)
