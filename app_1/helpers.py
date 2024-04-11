@@ -5,7 +5,7 @@ from django.conf import settings
 
 def send_forget_password_mail(email):
     subject = 'Your forget password link'
-    message = f'Hi , click on the link to reset your password http://digi-hub.ddonline/change_password'
+    message = f'Hi , click on the link to reset your password http://digi-hub.online/change_password'
     email_from = settings.EMAIL_HOST_USER
     recipient_list = [email]
     send_mail(subject, message, email_from, recipient_list)
