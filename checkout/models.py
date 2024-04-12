@@ -14,7 +14,7 @@ class Order(models.Model):
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
     order_date = models.DateTimeField(auto_now_add=True)
     payment_status = models.CharField(max_length=15, default="Pending")
-    payment_method = models.CharField(max_length=15, default="COD")
+    payment_method = models.CharField(max_length=15, default="COD") 
     order_status = models.CharField(max_length=15, default="Pending")
     delivery_date = models.DateTimeField(null=True, blank=True)
     coupon=models.CharField(max_length=15, default="No Coupon")

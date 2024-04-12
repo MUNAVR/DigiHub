@@ -420,16 +420,14 @@ def order_list(request):
     return render(request, "admin_panel/order_list.html", context)
 
 def reject_orderAdmin(request, order_id):
+    print("here")
     try:
         order = Order.objects.get(id=order_id)
         
         if order.order_status == 'Cancelled':
             messages.error(request, 'Order has already been cancelled.')
+
         else:
-          
-            order.order_status = 'Cancelled'
-            order.save()
-            
             
             order_products = OrderProduct.objects.filter(order=order)
             for order_product in order_products:
@@ -438,18 +436,21 @@ def reject_orderAdmin(request, order_id):
                 for product_variant in product_variants:
                     product_variant.stock += total_quantity
                     product_variant.save()
-            messages.success(request, 'Order has been rejected successfully.')
-            
-           
-            if order.payment_status == 'Paid' and order.order_status == 'Pending':
-                wallet = Wallet.objects.get(user=order.user)
-                wallet.balance += order.total_amount
-                wallet.save()
-                Transaction.objects.create(wallet=wallet, amount=order.total_amount, transaction_type='Credit')
-                messages.info(request, 'Amount refunded to wallet successfully.')
+                    messages.success(request, 'Order has been rejected successfully.')
+    
+            if order.payment_status == 'paid' and order.order_status == 'Pending':
+                    print("evide")
+                    wallet = Wallet.objects.get(user=order.user)
+                    wallet.balance += order.total_amount
+                    print(wallet)
+                    print(wallet.balance)
+                    wallet.save()
+                    Transaction.objects.create(wallet=wallet, amount=order.total_amount, transaction_type='Credit')
+                    messages.info(request, 'Amount refunded to wallet successfully.')
+                    order.order_status = 'Cancelled'
+                    order.save()
             
             elif order.payment_status == 'Pending':
-               
                 pass
     except Order.DoesNotExist:
         messages.error(request, 'Order not found.')
