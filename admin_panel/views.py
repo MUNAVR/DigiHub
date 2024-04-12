@@ -433,10 +433,11 @@ def reject_orderAdmin(request, order_id):
             
             order_products = OrderProduct.objects.filter(order=order)
             for order_product in order_products:
-                product_variant = Product_Variant.objects.filter(product__product_name=order_product.product_name)
-                product_variant.stock += order_product.quantity
-                product_variant.save()
-            
+                product_variants = Product_Variant.objects.filter(product__product_name=order_product.product_name)
+                total_quantity = order_product.quantity
+                for product_variant in product_variants:
+                    product_variant.stock += total_quantity
+                    product_variant.save()
             messages.success(request, 'Order has been rejected successfully.')
             
            

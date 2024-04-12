@@ -122,9 +122,7 @@ def Product_add(request):
              error_message.append('camera field must contain at least one digit.')
         elif not offer.isdigit():
             error_message.append('The offer field must contain only digits.')
-        elif len(offer) != 2:
-            error_message.append('The offer field must contain exactly two digits.')
-        elif int(offer) <= 0:
+        elif int(offer) < 0:
             error_message.append('The offer field must contain a positive number.')
         else:
             try:
